@@ -5,29 +5,20 @@
     "name": "Bentley Development Management",
     "url": "https://github.com/JamesBDM/bdm-plugins"
   },
-  "metadata": {
-    "pluginRoot": "./plugins"
-  },
   "plugins": [
     {
       "name": "bdm-standards",
-      "source": "./bdm-standards",
-      "displayName": "BDM Standards",
+      "source": "./plugins/bdm-standards",
       "description": "BDM house style, brand rules and document QA — plus the tools that make BDM templates render correctly. Install this one first; everything else assumes it.",
-      "version": "1.0.0",
-      "author": { "name": "Bentley Development Management" },
-      "category": "standards",
-      "keywords": ["bdm", "brand", "house style", "pdf", "markup", "templates"]
+      "version": "1.0.1",
+      "author": { "name": "Bentley Development Management" }
     },
     {
       "name": "bdm-contract-admin",
-      "source": "./bdm-contract-admin",
-      "displayName": "BDM Contract Admin",
+      "source": "./plugins/bdm-contract-admin",
       "description": "Contract administration under AS4000 — tender clarifications, progress certificates, site inspections, meeting minutes, variations and EOTs.",
-      "version": "1.0.0",
-      "author": { "name": "Bentley Development Management" },
-      "category": "contract-administration",
-      "keywords": ["as4000", "superintendent", "variation", "eot", "progress claim", "minutes", "tender"]
+      "version": "1.0.1",
+      "author": { "name": "Bentley Development Management" }
     }
   ]
 }
