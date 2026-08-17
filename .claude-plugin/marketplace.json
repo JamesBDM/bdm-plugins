@@ -3,7 +3,7 @@
   "description": "Bentley Development Management — shared Claude skills for contract administration and BDM document standards.",
   "owner": {
     "name": "Bentley Development Management",
-    "url": "https://github.com/jamesbdm/bdm-plugins"
+    "url": "https://github.com/JamesBDM/bdm-plugins"
   },
   "metadata": {
     "pluginRoot": "./plugins"

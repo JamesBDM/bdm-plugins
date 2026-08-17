@@ -30,12 +30,12 @@ Contract administration under AS4000.
 **In Claude Code or the desktop app's Code tab:**
 
 ```
-/plugin marketplace add jamesbdm/bdm-plugins
+/plugin marketplace add JamesBDM/bdm-plugins
 /plugin install bdm-standards@bdm
 /plugin install bdm-contract-admin@bdm
 ```
 
-**In Cowork:** use the plugin menu next to the prompt box → Manage plugins → add the marketplace `jamesbdm/bdm-plugins`, then install both.
+**In Cowork:** use the plugin menu next to the prompt box → Manage plugins → add the marketplace `JamesBDM/bdm-plugins`, then install both.
 
 ## Getting updates
 
