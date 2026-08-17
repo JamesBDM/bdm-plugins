@@ -1,0 +1,34 @@
+{
+  "_comment": "Example built from the Greenwich on Chevron Basement 2 inspection (28 May 2026). Claude fills this per job from the OneNote narrative + context email. 'template' may be omitted to auto-find the latest Form 331.",
+  "particulars": {
+    "ProjectName": "Greenwich on Chevron",
+    "ProjectNumber": "202304",
+    "InspectionDate": "2026-05-28",
+    "InspectionTime": "2:09 PM (approx.)",
+    "Weather": "Overcast; wet underfoot, elevated groundwater (refer Photo 1)",
+    "StageOfWorks": "Occupied building – remedial drainage works, Basement 2"
+  },
+  "attendees": [
+    ["James Gill", "BDM – Superintendent’s Representative"],
+    ["Site technician", "Blockage Doctor – Drainage contractor"]
+  ],
+  "observations": [
+    ["1.0", "BACKGROUND", "", true],
+    ["1.1", "Greenwich on Chevron is an occupied residential apartment building at Chevron Island. A stormwater / drainage line runs beneath the 450mm raft slab serving Basement 2.", "–", false],
+    ["1.2", "Over the past couple of weeks a minor leak was identified in the Basement 2 slab. Blockage Doctor was engaged to CCTV the line and re-line a previously re-lined section of pipe.", "Blockage Doctor", false],
+    ["2.0", "SITE OBSERVATIONS (28 May 2026)", "", true],
+    ["2.1", "During rectification, Blockage Doctor cut out the failed liner. Once cut, full water-table head pressure came through, making re-lining impossible and flooding Basement 2.", "Blockage Doctor", false],
+    ["3.0", "RECTIFICATION OPTIONS DISCUSSED", "", true],
+    ["3.1", "Option 1 – Larger pump to draw water down enough to complete cutting and install the new liner. Preferred first course of action.", "Blockage Doctor", false],
+    ["4.0", "WHS / RESIDENT IMPACT", "", true],
+    ["4.1", "Basement 2 unusable and cordoned off. Sulphur odour permeating upper levels via the lift shaft.", "Building Manager", false],
+    ["5.0", "NEXT STEPS", "", true],
+    ["5.1", "Proceed with Option 1 (larger pump). On-site coordination meeting Mon 1 June 2026, 1:00pm.", "All parties", false]
+  ],
+  "photos_dir": "/tmp/gw_photos",
+  "captions": [
+    "Photo 1 – Site frontage: water discharging across the footpath and kerb (ref 1.1).",
+    "Photo 2 – Basement 2 ramp: pump hoses from the fire / sprinkler pump room (ref 2.1)."
+  ],
+  "options": { "photos_per_page": 4, "signature": false }
+}

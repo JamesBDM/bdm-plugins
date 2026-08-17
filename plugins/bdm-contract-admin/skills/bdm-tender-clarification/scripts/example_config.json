@@ -1,0 +1,33 @@
+{
+  "_comment": "Worked example — 160 Pacific Parade TC-04: tender-close extension + lift/stair-core reinforcement RFI. source_tc points at the prior full TC to clone. All drawing refs were read off the source title block — never invented.",
+  "source_tc": "/path/to/202602_160 Pacific Parade, Bilinga/12_Tender Documents/Tender/RFI/RFI002 & 3/BDM_TenderClarification_160PacificParade_TC-03.docx",
+  "particulars": {
+    "project": "160 Pacific Parade, Bilinga — Residential Development",
+    "project_number": "202602",
+    "project_manager": "James Gill — Bentley Development Management",
+    "issued_to": "Smico (Scott Smithers); Centro Concepts (Alex Seydel, Clay Kudla)",
+    "clarification_number": "TC-04",
+    "issue_date": "2 June 2026"
+  },
+  "subtitle": "Extension of the tender closing date and response to a Tenderer query (lift well and stair core footing reinforcement) for the above project. To be read in conjunction with the Tender Brief and all previously issued Tender Clarifications and Notices to Tenderers.",
+  "clarification": "This Tender Clarification is issued to: (a) extend the tender closing date for the above project, following a Tenderer request for additional time to finalise tender pricing; and (b) respond to a Tenderer query regarding lift well and stair core footing reinforcement. It is to be read in conjunction with the Tender Brief and all previously issued Tender Clarifications and Notices to Tenderers. All other terms and conditions of the Tender Brief remain unchanged.",
+  "closing_date": "The tender closing date is extended to 12:00 noon, Thursday 11 June 2026. This supersedes the previous closing date of 12:00 noon, Wednesday 3 June 2026 advised in Notice to Tenderers No. 1 (issued 7 May 2026). All other tender requirements remain unchanged.",
+  "rfi_intro": "The following table responds to a query raised by a Tenderer during the tender period. The drawing referenced in the response is attached and forms part of the tender documentation.",
+  "rfi_items": [
+    {
+      "item": "1",
+      "subject": "Lift well & stair core footing reinforcement",
+      "query": "Reinforcement for the lift base and stair base is not detailed on the issued structural drawings (ref. LT2-S1.101, LT2-S1.212 and LT2-S1.213). Tenderer requested the reinforcement detail be provided for tender assembly.",
+      "response": "The lift base and stair core footing reinforcement is detailed on the attached Burchills drawing “Part Plan of Core/Lift Pad Reo” (Project BE230166, Drawing LT2-S1.101, Version 2 — Issued for Construction, 21 April 2026), now issued to form part of the tender documentation. Tenderers are to allow for the top and bottom reinforcement shown, together with the pile design loads noted on the drawing (BP.1 piles designed for 1400 kN working load; piles under the lift and stair core designed for 120 kN uplift per GCCC). The wall, column and footing types refer to the corresponding S-series detail drawings as annotated.",
+      "source": "Burchills"
+    }
+  ],
+  "attachments": [
+    "Part Plan of Core/Lift Pad Reo — 160 Pacific Parade, Bilinga (Burchills Engineering Solutions; Project BE230166; Drawing LT2-S1.101; Version 2 — Issued for Construction, 21 April 2026)"
+  ],
+  "author": {
+    "name": "James Gill",
+    "title": "Project Manager · Bentley Development Management",
+    "email": "jg@bdmanagement.com.au"
+  }
+}

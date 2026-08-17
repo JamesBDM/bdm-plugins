@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "project": "160 & 160A Pacific Parade",
+    "meeting_no": "SM004   ·   Site Meeting",
+    "location": "Site / Microsoft Teams",
+    "date_time": "21 May 2026   ·   09:00 – 10:00"
+  },
+
+  "attendees": [
+    {"name": "James Gill",   "initials": "JG", "company": "BD Management",  "email": "james@bdmanagement.com.au"},
+    {"name": "Jarrett Bird", "initials": "JB", "company": "RSL Queensland", "email": "Jarrett.Bird@rslqld.org"},
+    {"name": "Alex Seydel",  "initials": "AS", "company": "Centro Concepts","email": "alex@centroconcepts.com.au"}
+  ],
+
+  "apologies": [
+    {"name": "Andrew Bentley", "initials": "AB", "company": "BD Management", "email": "andrew@bdmanagement.com.au"}
+  ],
+
+  "distribution": "consultants on project distribution list",
+
+  "summary": "Site walk-through of the Lot 1 set-out and discussion of OPW commencement. Centro confirmed plant booking for civil works week commencing 25 May. Asbestos scrape sequencing locked in. No outstanding RFIs; structural docs reviewed on site against the IFC package.",
+
+  "topics": [
+    {
+      "heading": "01 Set-out & Survey",
+      "bullets": [
+        "Lot 1 corner pegs verified against the surveyor's drawings — no encroachment issues.",
+        "Centro to set up site office adjacent to existing driveway from 25 May."
+      ]
+    },
+    {
+      "heading": "02 Civil Works — Commencement",
+      "bullets": [
+        "Plant booking confirmed for 25 May start (excavator + dump truck).",
+        "QLeave receipt received; OPW approval pending Council acknowledgement.",
+        "Asbestos scrape to commence immediately after Council go-ahead."
+      ]
+    },
+    {
+      "heading": "03 Structural — IFC Package Review",
+      "bullets": [
+        "Burchills IFC reviewed on site; no clashes flagged with surveyor set-out.",
+        "Reinforcement tonnages match Centro's tender allowance — no variation risk identified at this stage."
+      ]
+    }
+  ],
+
+  "actions": [
+    {"owner": "JG", "action": "Confirm Council acknowledgement of QLeave receipt and circulate OPW approval letter.", "due": "23-May-2026"},
+    {"owner": "AS", "action": "Submit detailed pre-start checklist and SWMS for asbestos handling.",                  "due": "24-May-2026"},
+    {"owner": "JB", "action": "Issue formal NTC once OPW released.",                                                   "due": "TBC"},
+    {"owner": "JG", "action": "Schedule SM005 for week commencing 1 June.",                                            "due": "27-May-2026"}
+  ],
+
+  "next_meeting": "SM005 — week commencing 1 June 2026; date and location to be confirmed."
+}

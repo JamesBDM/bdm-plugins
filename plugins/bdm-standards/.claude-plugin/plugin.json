@@ -1,0 +1,9 @@
+{
+  "name": "bdm-standards",
+  "version": "1.0.0",
+  "description": "BDM house style, brand rules and document QA, plus the PDF export and markup tooling every BDM deliverable relies on.",
+  "author": { "name": "Bentley Development Management" },
+  "homepage": "https://github.com/jamesbdm/bdm-plugins",
+  "repository": "https://github.com/jamesbdm/bdm-plugins",
+  "keywords": ["bdm", "brand", "house style", "pdf", "markup", "templates"]
+}
