@@ -1,0 +1,17 @@
+{
+  "skill_name": "bdm-site-inspection-report",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Build a Form 331 site inspection report with ten portrait site photos, long captions, four photos per page, and no signature block.",
+      "expected_output": "A Word and PDF report whose photo section is paginated as 4, 4 and 2 photos, with every caption kept with its photo and no trailing caption-only page.",
+      "files": [],
+      "assertions": [
+        "The Word document contains ten photos and ten captions.",
+        "The photo section uses three explicit photo-page tables containing 4, 4 and 2 photos.",
+        "Two ordinary page breaks separate the photo-page tables.",
+        "The PDF contains no blank or caption-only trailing page."
+      ]
+    }
+  ]
+}

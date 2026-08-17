@@ -1,6 +1,6 @@
 {
   "name": "bdm-contract-admin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Contract administration under AS4000 — tender clarifications, progress certificates, site inspections, meeting minutes, variations and EOTs.",
   "author": { "name": "Bentley Development Management" },
   "homepage": "https://github.com/JamesBDM/bdm-plugins",

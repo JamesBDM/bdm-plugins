@@ -48,13 +48,13 @@ Trigger when a BDM PM hands over a OneNote/photo PDF from a site visit and wants
    - **Observations** — a sectioned table. Use section header rows (`is_section=true`, e.g. `1.0 BACKGROUND`). Adapt the section set to the visit: for an **incident** use BACKGROUND / SITE OBSERVATIONS / RECTIFICATION OPTIONS / WHS & RESIDENT IMPACT / NEXT STEPS; for a **routine progress** visit use the form's standard GENERAL / WORKS IN PROGRESS / QUALITY & WORKMANSHIP / WHS & ENVIRONMENTAL / PROGRAMME. Put an owner in the ACTION column. Cross-reference photos in the text, e.g. "(Photos 3-6)".
    - **Captions** — one per stitched photo, each referencing the observation item, e.g. "Photo 4 - Water at the fire-stair drain (ref 2.3)."
    - **Options** — `photos_per_page` default **4**; `signature` default **false** (block removed). Override per job.
-5. **Build the Word doc.** `python3 scripts/build_report.py config.json "<out>.docx"` — auto-finds the latest Form 331, fills the three tables, deletes blank attendee rows, drops the signature block (unless kept), forces the **PHOTOGRAPHS heading onto the photo page**, and lays out the captioned photo grid.
+5. **Build the Word doc.** `python3 scripts/build_report.py config.json "<out>.docx"` — auto-finds the latest Form 331, fills the three tables, deletes blank attendee rows, drops the signature block (unless kept), forces the **PHOTOGRAPHS heading onto the photo page**, and lays out the captioned photo grid. The builder creates a separate photo table for each configured page and inserts an ordinary page break between tables; do not rely on Word's automatic table pagination.
 6. **Export the PDF** with `bdm-pdf-export` (`scripts/pdf_export.sh "<out>.docx"`). Eyeball it.
 7. **Save.** Word + PDF into the project's `08_Issued Reports\NNN - <short title>\`. Filename: `<ProjectShort>_<ddmmyy> - Site Inspection Record.docx` / `.pdf`. Final docs to the issued-reports folder; working files in the sandbox.
 
 ## 5. House rules baked in (don't relearn these)
 
-- **Photos default 4 per page** (2x2, ~5.2 cm wide, captions Aptos 8pt italic navy). `photos_per_page` also supports 1 and 2.
+- **Photos default 4 per page** (2x2, ~5.2 cm wide, captions Aptos 8pt italic navy). `photos_per_page` also supports 1 and 2. The builder enforces this count using separate paginated tables, and PDF QA must confirm no caption is stranded on a later page.
 - **Signature block removed by default** — site inspection records issue as informational. Set `options.signature=true` to keep the signed line.
 - **PHOTOGRAPHS heading sits with the photos** — a page break is forced before it so the heading never strands at the foot of the observations page.
 - **Blank attendee rows are deleted**, not left empty.

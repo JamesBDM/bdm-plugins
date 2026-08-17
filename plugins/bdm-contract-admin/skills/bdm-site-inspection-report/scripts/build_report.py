@@ -26,7 +26,7 @@ from docx import Document
 from docx.shared import Cm, Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 
 NAVY = RGBColor(0x0F, 0x17, 0x21)
 # photos_per_page -> (columns, image width cm)
@@ -141,23 +141,35 @@ def main(cfg_path, out_path):
     photo_files = sorted(glob.glob(os.path.join(photos_dir, "photo*.jpg")),
                          key=lambda f: int(''.join(filter(str.isdigit, os.path.basename(f))) or 0)) if photos_dir else []
     if photo_files:
-        ptable = doc.add_table(rows=0, cols=cols); ptable.autofit = False
-        for i, pf in enumerate(photo_files):
-            if i % cols == 0:
-                row = ptable.add_row()
-            cell = row.cells[i % cols]
-            ip = cell.paragraphs[0]; ip.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            ip.add_run().add_picture(pf, width=Cm(wcm))
-            cap = cell.add_paragraph(); cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            text = captions[i] if i < len(captions) else ""
-            cr = cap.add_run(text); cr.font.name = 'Aptos'; cr.font.size = Pt(8)
-            cr.font.italic = True; cr.font.color.rgb = NAVY
-        photo_heading._p.addnext(ptable._tbl)
+        anchor = photo_heading._p
+        for chunk_start in range(0, len(photo_files), ppp):
+            if chunk_start:
+                break_p = doc.add_paragraph()
+                break_p.add_run().add_break(WD_BREAK.PAGE)
+                break_p.add_run("PHOTOGRAPHS (CONTINUED)").bold = True
+                anchor.addnext(break_p._p)
+                anchor = break_p._p
+
+            ptable = doc.add_table(rows=0, cols=cols); ptable.autofit = False
+            chunk = photo_files[chunk_start:chunk_start + ppp]
+            for local_i, pf in enumerate(chunk):
+                if local_i % cols == 0:
+                    row = ptable.add_row()
+                cell = row.cells[local_i % cols]
+                ip = cell.paragraphs[0]; ip.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                ip.add_run().add_picture(pf, width=Cm(wcm))
+                cap = cell.add_paragraph(); cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                absolute_i = chunk_start + local_i
+                text = captions[absolute_i] if absolute_i < len(captions) else ""
+                cr = cap.add_run(text); cr.font.name = 'Aptos'; cr.font.size = Pt(8)
+                cr.font.italic = True; cr.font.color.rgb = NAVY
+            anchor.addnext(ptable._tbl)
+            anchor = ptable._tbl
 
     doc.save(out_path)
     print(f"Saved: {out_path}")
     print(f"Template: {template}")
-    print(f"Photos: {len(photo_files)} at {ppp}/page (cols={cols}, w={wcm}cm) | signature={opts.get('signature', False)}")
+    print(f"Photos: {len(photo_files)} at {ppp}/page, separate paginated tables (cols={cols}, w={wcm}cm) | signature={opts.get('signature', False)}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

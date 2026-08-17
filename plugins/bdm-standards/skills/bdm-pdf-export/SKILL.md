@@ -60,6 +60,18 @@ The preflight script sets every data row except the actual last one to the inter
 - Path to the `.docx` file
 - Output folder for the `.pdf` (typically same folder as the `.docx`)
 
+### Windows (preferred on BDM workstations)
+
+Use Microsoft Word directly. This is the most faithful renderer and does not need the LibreOffice preflight fixes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pdf_export.ps1 "C:\path\report.docx"
+```
+
+The script writes the PDF beside the Word document unless a second output path is supplied. It opens the source read-only, disables background printing, retries transient Word automation rejections up to three times, and cleans up only invisible Word processes created by a failed attempt. It fails if the PDF is missing or empty. If a visible Word session has the document locked, stop and report the lock.
+
+### Linux / headless environments
+
 **Steps:**
 
 ```bash
