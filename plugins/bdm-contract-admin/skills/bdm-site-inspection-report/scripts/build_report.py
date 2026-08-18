@@ -86,7 +86,7 @@ def main(cfg_path, out_path):
             p.runs[0].text = text
             for e in p.runs[1:]: e.text = ''
         else:
-            run = p.add_run(text); run.font.name = 'Aptos'; run.font.size = Pt(10)
+            run = p.add_run(text); run.font.name = 'Calibri'; run.font.size = Pt(10)
             run.font.color.rgb = NAVY
     body = t1.rows[1:]
     for i, brow in enumerate(body):
@@ -161,7 +161,7 @@ def main(cfg_path, out_path):
                 cap = cell.add_paragraph(); cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 absolute_i = chunk_start + local_i
                 text = captions[absolute_i] if absolute_i < len(captions) else ""
-                cr = cap.add_run(text); cr.font.name = 'Aptos'; cr.font.size = Pt(8)
+                cr = cap.add_run(text); cr.font.name = 'Calibri'; cr.font.size = Pt(8)
                 cr.font.italic = True; cr.font.color.rgb = NAVY
             anchor.addnext(ptable._tbl)
             anchor = ptable._tbl

@@ -1,10 +1,10 @@
 {
-  "_comment": "Worked example — 160 Pacific Parade TC-04: tender-close extension + lift/stair-core reinforcement RFI. source_tc points at the prior full TC to clone. All drawing refs were read off the source title block — never invented.",
+  "_comment": "Worked example - tender-close extension + a structural RFI. source_tc points at the prior full TC to clone. All drawing refs are read off the source title block - never invented. Names, initials and emails here are PLACEHOLDERS: this skill runs for every BDM PM, so the author block resolves to the acting PM at run time (see bdm-house-style s9).",
   "source_tc": "/path/to/202602_160 Pacific Parade, Bilinga/12_Tender Documents/Tender/RFI/RFI002 & 3/BDM_TenderClarification_160PacificParade_TC-03.docx",
   "particulars": {
     "project": "160 Pacific Parade, Bilinga — Residential Development",
     "project_number": "202602",
-    "project_manager": "James Gill — Bentley Development Management",
+    "project_manager": "[PM Name] — Bentley Development Management",
     "issued_to": "Smico (Scott Smithers); Centro Concepts (Alex Seydel, Clay Kudla)",
     "clarification_number": "TC-04",
     "issue_date": "2 June 2026"
@@ -26,8 +26,8 @@
     "Part Plan of Core/Lift Pad Reo — 160 Pacific Parade, Bilinga (Burchills Engineering Solutions; Project BE230166; Drawing LT2-S1.101; Version 2 — Issued for Construction, 21 April 2026)"
   ],
   "author": {
-    "name": "James Gill",
+    "name": "[PM Name]",
     "title": "Project Manager · Bentley Development Management",
-    "email": "jg@bdmanagement.com.au"
+    "email": "[pm]@bdmanagement.com.au"
   }
 }

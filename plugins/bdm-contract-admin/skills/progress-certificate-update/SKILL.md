@@ -90,6 +90,29 @@ the previous claim was certified via a QS report / Payment Schedule), reconstruc
 certified" from the prior builder claim schedule's previous-claim column plus the Payment
 Schedule net. Flag that the prior figure is reconstructed.
 
+### 4a. Cross-check every variation line against the CAR (mandatory)
+
+**Do not certify a variation line off the builder's claim.** The builder's claim states the
+builder's view of each variation's status; the **Contract Admin Register (CAR)** states BDM's
+determination. Where they differ, the CAR governs.
+
+For every variation line in the claim:
+
+1. Open the project's CAR (`bdm-contract-admin-register`) and find the matching VO number.
+2. Compare **status** (Approved / Rejected / Pending / Superseded) and **approved value**.
+3. Certify the **CAR** position, not the claimed position.
+4. List every mismatch in the hand-back, with both figures.
+
+A pending or rejected variation certifies at **$0** regardless of what the claim shows. A
+superseding CSA carries the **restated** value, not a delta.
+
+> This is not a theoretical control. On one certificate **5 of 17 variation lines** carried
+> the wrong status straight off the builder's claim — including one claimed at **$50,589
+> approved** that the register showed as **REJECTED, $0**.
+
+If the project has no CAR, or the CAR is stale, **say so and stop**. Do not certify variations
+against an unverified register.
+
 ### 5. Build (stage in the project's sandbox)
 All working/intermediate files go in the **active project's `00_ai_sandbox`** folder — every
 BDM project has one, and it's the standing location for in-progress work (operator-agnostic;
@@ -114,8 +137,12 @@ contract-form references are right. Never report done before looking (BDM verify
 ### 7. File the final deliverables to the contract admin folder
 Once the certificate is finalised and ties out, copy the **final `.xlsm` + DRAFT PDF** (and the
 three source docs) to the project's contract-admin folder for progress claims — e.g.
-`13_Contract\04_Progress Claims\PC to Builder\PC 0NN (Month YYYY)\` (use the project's actual
-numbering). **Never overwrite existing source project files**; only add the new claim folder.
+`13_Contract Admin\01_Main Contract\03_Payment Claims\PC to Builder\PC 0NN (Month YYYY)\`
+(use the project's actual numbering).
+
+> The old `13_Contract\04_Progress Claims\` path was **retired in May 2026** when the
+> `13_Contract` / `13_Contract Admin` split was collapsed. Filing to the old path puts the
+> certificate somewhere nobody looks. **Never overwrite existing source project files**; only add the new claim folder.
 
 ### 8. Clean up the skill's own working files
 After the build, verification, PDF export and filing are done, delete the **scratch /
@@ -138,6 +165,33 @@ ever used, the script auto-repairs these known defects (and no-ops on the clean 
   workbook is macro-free and prints correctly with no enable-macros prompt.
 - "Actual Cumulative" total summing instead of taking the last value.
 - The yellow "INPUT DATES" highlight on the cashflow note cells.
+- **Prior unfixed materials not added back.** `02 Certificate!F28` shipped wired
+  `='03 Trade Breakdown'!G88*-1`, which deducts the *whole* unfixed-materials balance
+  including the portion already deducted last certificate. Correct is
+  `=-('03 Trade Breakdown'!G88-'03 Trade Breakdown'!G58)`. Left unfixed, this
+  **over-certified one draft by $1,533,071.32 ex GST**. The guard rewrites the formula and
+  no-ops once correct.
+
+## Figures the roll-forward does NOT handle for you
+
+**Builder's margin (`03 Trade Breakdown!I56`).** The template leaves *last month's* margin in
+place. Set `builders_margin` in the config — either `{"rate": 0.06}` to recompute on this
+claim's value, or an absolute amount. If neither is supplied the script warns and the stale
+figure stands; confirm it before issuing.
+
+## Writing the workbook safely
+
+**Never let openpyxl re-save a branded BDM workbook without checking what survived.** An
+openpyxl round-trip silently drops embedded images — seven logos and roughly 19 KB were lost
+from one register this way. The script now compares `xl/media/` before and after and **fails
+the build** if anything was dropped.
+
+When the check fails, do not re-run and hope. Rebuild by editing the XML directly and
+re-zipping, observing OOXML child order:
+
+- `pageSetup` comes **after** `pageMargins`.
+- `[Content_Types].xml` is the **first** entry in the archive.
+- A LibreOffice round-trip that opens cleanly is the acceptance test.
 
 ## Cashflow tab notes
 
@@ -149,8 +203,9 @@ window, extend the month rows (a template enhancement) and flag it.
 
 ## Flags to raise every time
 
-Retention basis used; contract form / clause confirmed against the executed contract; any
-certified-vs-claimed delta; any source that was OneDrive cloud-only and couldn't be read; and
+Retention basis used; **contract form / edition confirmed against the executed contract**
+(mandatory — the script aborts without it); **every CAR mismatch, with both figures**; the
+builder's margin basis; any certified-vs-claimed delta; any source that was OneDrive cloud-only and couldn't be read; and
 the DRAFT/signatory status. Scope of v1 is **head-contract** progress certificates.
 
 ## Reference files

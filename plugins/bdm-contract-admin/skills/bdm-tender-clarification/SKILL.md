@@ -5,6 +5,7 @@ type: process
 template_revision: R1
 issued: 2026-06-02
 approved_by: James Gill
+revised: 2026-08-18
 maintained_by: BDM Standards Agent
 parent_skill: bdm-house-style
 related_skills: bdm-pdf-export, bdm-house-style
@@ -72,11 +73,11 @@ Output is always **Word + signature-ready PDF + a cover email draft** for the PM
    - **Attachments (5.0)** — optional list; each line = the issued drawing with full reference.
    - **Author block** — name, title, email (defaults to the cloning PM).
 6. **Build the Word doc.** `python3 scripts/build_tc.py config.json "<out>.docx"` — clones the source TC, fills the particulars table, sets the subtitle/clarification/closing-date text, builds or removes the RFI table (one row per item) and attachments list, **renumbers the Submission/Acknowledgement sections automatically**, and swaps the author block/signature if provided.
-7. **Export the PDF** with `bdm-pdf-export` (`scripts/pdf_export.sh "<out>.docx"`). Eyeball page 1 (masthead font, particulars) and the RFI table.
-8. **Signature.** Default is the cloning PM's signature (carried in the clone). To author as a different PM, set `signature_png` to their signature (`Projects - Documents/<PMUser>/<INITIALS>_signature.png`, e.g. James → `George/JG_signature.png`) at 2.25 cm — `build_tc.py` swaps it. If a PM has no signature on file, flag and ask.
-9. **Save the pack.** Word + PDF into `12_Tender Documents/Tender/RFI/RFI<NN> - TC<NN>_<Descriptor>/`, with any referenced drawings filed alongside (clear filenames, e.g. `BE230166_LT2-S1.101_V2_Core-Lift-Pad-Reo.pdf`). Working copy → sandbox. **OneDrive binary-write workaround:** build/convert in `outputs/`, then `cat src > dest && sync` into the project folder; verify the copies re-open.
+7. **Export the PDF** with `bdm-pdf-export` — load the skill and run its inlined preflight, then convert and render-check. Eyeball page 1 (masthead font, particulars) and the RFI table. *(The old pdf_export shim in this skill's scripts folder is deleted: both paths it searched were dead, and one pointed into a single user's folder.)*
+8. **Signature.** Default is the cloning PM's signature (carried in the clone). To author as a different PM, set `signature_png` to that PM's signature, resolved at run time per `bdm-house-style` § 9.3 — `<PM home>/<INITIALS>_signature.png`, at **2.25 cm**. `build_tc.py` swaps it. **Never hardcode a person's signature path, and never substitute another PM's signature.** If the acting PM has no signature on file, flag it and ask.
+9. **Save the pack.** Word + PDF into `12_Tender Documents/Tender/RFI/RFI<NN> - TC<NN>_<Descriptor>/`, with any referenced drawings filed alongside (clear filenames, e.g. `BE230166_LT2-S1.101_V2_Core-Lift-Pad-Reo.pdf`). Working copy → sandbox. **Writing into the synced folder:** build/convert in `outputs/`, then write with the fsync byte-write in `bdm-house-style` § 8.6 — **not** `cat`+`sync`, which left corrupt files on four projects. Re-open the copies to verify.
 10. **Draft the cover email** (§7) as chat text for the PM to paste into Outlook (Cowork can't draft to Outlook directly). To: tenderers; cc: client/Superintendent.
-11. **Update the project summary** — add a change-log line (what the TC does, refs, status DRAFT — held for PM to issue). If it extends the close, note to update the close date in §1/§4 **once issued**. Sweep temp files (per `bdm-house-style` § 11.5).
+11. **Update the project summary** — add a change-log line (what the TC does, refs, status DRAFT — held for PM to issue). If it extends the close, note to update the close date in §1/§4 **once issued**. Sweep temp files (per `bdm-house-style` § 13.10).
 
 ## 6. Document structure (Form 218) — dynamic numbering
 
@@ -102,7 +103,7 @@ Then **SUBMISSION** · **ACKNOWLEDGEMENT** · signature block.
 >
 > [If RFI/drawing] In response to the query on <subject>, the detail is provided on the attached <consultant> drawing "<title>" (<dwg no> <ver>), which now forms part of the tender documentation. Please allow for <what> as shown.
 >
-> Tenders are to be submitted by email to jg@bdmanagement.com.au in two separate packages clearly labelled: Package 1 — Lot 1 …; Package 2 — Lot 2 …. [adapt to the tender]
+> Tenders are to be submitted by email to {{PM_EMAIL}} in two separate packages clearly labelled: Package 1 — Lot 1 …; Package 2 — Lot 2 …. [adapt to the tender]
 >
 > Please acknowledge receipt by return email, and let me know if you have any further queries.
 >
@@ -115,19 +116,21 @@ Keep the RFI raiser **neutral** ("the query") in both the TC and the email — i
 
 ## 8. House rules baked in (don't relearn these)
 
-- **Never invent** dates, drawing numbers, revisions, costs, clause or RFI refs — read them off the source (`bdm-house-style` § 11.1).
+- **Never invent** dates, drawing numbers, revisions, costs, clause or RFI refs — read them off the source (`bdm-house-style` § 13.1).
 - **BDM drafts only** — never "issue". The PM sends; that's the issue event.
 - **Always re-check the weekday** of any quoted date.
-- **Signature-ready** — every PM-issued PDF carries the author's signature at 2.25 cm (memory `signature_size_rule`).
-- **OneDrive write quirk** — stage binaries in `outputs/`, copy in with `cat`+`sync`, re-open to verify. If the target `.docx`/`.pdf` is locked (open in Word/Acrobat), say so and ask the PM to close it.
+- **Signature-ready means two things** — the acting PM's signature embedded at 2.25 cm **and** the literal word "Date" replaced with the actual date (`DD MMM YYYY`, Brisbane time). One without the other is a failed deliverable (`bdm-pdf-export` § 7).
+- **`{{PM_EMAIL}}`, `{{PM_NAME}}` and `<PM name>` in the § 7 boilerplate resolve to the acting PM** at run time (`bdm-house-style` § 9). Never leave a hardcoded address in issued text — a tender submission sent to the wrong inbox is not recoverable.
+- **Writing into the synced folder** — stage binaries in `outputs/`, then use the fsync byte-write (`bdm-house-style` § 8.6). Never `cat`+`sync`. Re-open to verify. If the target `.docx`/`.pdf` is locked (open in Word/Acrobat), say so and ask the PM to close it.
 - **Verify against the current template** — if the cloned TC is an older Form 218 revision than the Working Copy, flag it before issuing.
 
 ## 9. Files
 
 - `scripts/next_tc.py` — scan a project's tender RFI folder → next TC number, suggested subfolder name, path to latest TC to clone.
 - `scripts/build_tc.py` — config JSON → Form 218 Word doc (clone-and-fill, dynamic section numbering, optional signature/author swap).
-- `scripts/example_config.json` — worked example: 160 Pacific Parade TC-04 (extension + lift/stair-core reinforcement RFI).
-- `scripts/pdf_export.sh` — wrapper to `bdm-pdf-export` (fonts + preflight + LibreOffice PDF).
+- `scripts/example_config.json` — worked example (extension + a structural RFI). Names and emails in it are placeholders; the author block resolves to the acting PM at run time.
+
+PDF export has no script here — load the `bdm-pdf-export` skill, which is self-contained.
 
 ## 10. Provenance
 

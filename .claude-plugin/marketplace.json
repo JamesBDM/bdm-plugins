@@ -9,16 +9,20 @@
     {
       "name": "bdm-standards",
       "source": "./plugins/bdm-standards",
-      "description": "BDM house style, brand rules and document QA — plus the tools that make BDM templates render correctly. Install this one first; everything else assumes it.",
-      "version": "1.1.0",
-      "author": { "name": "Bentley Development Management" }
+      "description": "BDM house style and brand rules (Brand Standard R3 — Calibri), document QA, self-contained PDF export and Datum markup. Install this one first; everything else assumes it.",
+      "version": "2.0.0",
+      "author": {
+        "name": "Bentley Development Management"
+      }
     },
     {
       "name": "bdm-contract-admin",
       "source": "./plugins/bdm-contract-admin",
-      "description": "Contract administration under AS4000 — tender clarifications, progress certificates, site inspections, meeting minutes, variations and EOTs.",
-      "version": "1.0.2",
-      "author": { "name": "Bentley Development Management" }
+      "description": "Contract administration under AS4000 — variations and CSAs, EOTs, the Contract Admin Register, progress certificates, tender clarifications and addenda, site inspections and meeting minutes.",
+      "version": "2.0.0",
+      "author": {
+        "name": "Bentley Development Management"
+      }
     }
   ]
 }

@@ -23,7 +23,7 @@ Usage:
 The guard functions are idempotent: they fix the known R3 template defects but
 are no-ops on a clean R4+ master, so this script works on either.
 """
-import argparse, json, math, os, re, shutil, subprocess, sys, tempfile, datetime
+import argparse, json, math, os, re, shutil, subprocess, sys, tempfile, datetime, zipfile
 import openpyxl
 from openpyxl.styles import PatternFill
 from openpyxl.workbook.properties import CalcProperties
@@ -100,8 +100,75 @@ def remove_input_highlight(wb):
             cf.cell(r, c).fill = nofill
 
 
+def guard_unfixed_materials(wb):
+    """02 Certificate - PRIOR unfixed materials must be added back.
+
+    Bad wiring found in the field:  ='03 Trade Breakdown'!G88*-1
+      -> deducts the WHOLE unfixed-materials balance, including the portion
+         already deducted on the previous certificate.
+    Correct:                        =-('03 Trade Breakdown'!G88-'03 Trade Breakdown'!G58)
+
+    Left unfixed this over-certified one draft by $1,533,071.32 ex GST.
+    Idempotent: no-op once the formula is correct.
+    """
+    c = wb['02 Certificate']
+    bad = re.compile(r"^=\s*-?\s*'?03[^!']*'?!G88\s*\*\s*-1\s*$", re.I)
+    fixed = []
+    for row in c.iter_rows():
+        for cell in row:
+            v = cell.value
+            if isinstance(v, str) and bad.match(v.strip()):
+                cell.value = "=-('03 Trade Breakdown'!G88-'03 Trade Breakdown'!G58)"
+                fixed.append(cell.coordinate)
+    return fixed
+
+
+def roll_margin_forward(wb, cfg):
+    """03 Trade Breakdown I56 - builder's margin.
+
+    The template leaves LAST month's margin in place. It must be recomputed on
+    this claim's value or the certificate carries a stale figure.
+    Returns a warning string when the config does not settle it.
+    """
+    tb = wb['03 Trade Breakdown']
+    m = cfg.get('builders_margin')
+    if isinstance(m, dict) and m.get('rate') is not None:
+        tb['I56'] = "=I46*%s" % m['rate']
+        return None
+    if isinstance(m, (int, float)):
+        tb['I56'] = m
+        return None
+    return ("builders_margin not supplied - 03!I56 still holds the PRIOR certificate's "
+            "margin. Set builders_margin (rate or amount) in the config, or confirm the "
+            "existing figure against this claim before issuing.")
+
+
+def check_branding_survived(template_path, built_path):
+    """3.7 - openpyxl re-saves silently drop embedded images.
+
+    A branded BDM workbook that loses its logos is a failed deliverable (7 images
+    and ~19KB were lost from one register this way). Compare the media parts in
+    the template against the built file and report any loss. XML-edit + re-zip is
+    the safe route when this check fails.
+    """
+    def media(path):
+        with zipfile.ZipFile(path) as z:
+            return sorted(n for n in z.namelist() if n.startswith('xl/media/'))
+    try:
+        before, after = media(template_path), media(built_path)
+    except Exception as e:
+        return ["branding check could not run: %s" % e]
+    lost = [n for n in before if n not in after]
+    return (["LOST EMBEDDED IMAGE: %s" % n for n in lost] +
+            (["openpyxl dropped %d of %d embedded images - do NOT issue this file; "
+              "rebuild by XML-editing the template and re-zipping "
+              "([Content_Types].xml first in the archive)." % (len(lost), len(before))]
+             if lost else []))
+
+
 def apply_guards(wb, rev_label):
     fix_cover_certno(wb)
+    guard_unfixed_materials(wb)
     n = port_scurve(wb)
     fix_cashflow_cumulative(wb)
     remove_input_highlight(wb)
@@ -153,7 +220,15 @@ def populate(wb, cfg):
     c['F5'] = _date(cfg['valuation_date'])
     c['F32'] = -abs(cfg['previous_net'])
 
-    cf_form = cfg.get('contract_form', 'AS4000-2024')
+    cf_form = cfg.get('contract_form')
+    if not cf_form:
+        raise SystemExit(
+            "ABORT: 'contract_form' is mandatory and has no default.\n"
+            "It prints into the cover letter body, the footer strapline, the Annexure A\n"
+            "footnote and the covering paragraph. Read the EXECUTED contract (Particulars\n"
+            "and General Conditions) and set it explicitly, e.g. 'Amended AS4000-1997'.\n"
+            "A silent 'AS4000-2024' default put the wrong edition on two issued\n"
+            "certificates. Never guess the edition.")
     cl = wb['01 Cover Letter']
     cl['B19'] = ('="Pursuant to cl.37.2 of the General Conditions of the ' + cf_form +
                  ' Contract, Bentley Development Management issues Progress Certificate No. "'
@@ -275,20 +350,28 @@ def main():
 
     wb = openpyxl.load_workbook(a.template, keep_vba=True)
     ported = apply_guards(wb, a.rev)
+    warnings = []
+    margin_warning = roll_margin_forward(wb, cfg)
+    if margin_warning:
+        warnings.append(margin_warning)
     populate(wb, cfg)
     wb.calculation = CalcProperties(fullCalcOnLoad=True)
     wb.save(xlsm)
 
+    branding = check_branding_survived(a.template, xlsm)
     chk = verify_python(cfg)
     errors = recalc_and_pdf(xlsm, pdf)
 
     print(json.dumps({
         'xlsm': xlsm, 'pdf': pdf, 'scurve_rows_ported': ported,
         'formula_errors': errors[:20], 'error_count': len(errors),
+        'branding_check': branding or 'all embedded images preserved',
+        'warnings': warnings,
         'verification': chk,
-        'PASS': chk['ties_to_invoice'] and not errors,
+        'car_crosscheck': 'REQUIRED before issue - see SKILL.md step 4a',
+        'PASS': chk['ties_to_invoice'] and not errors and not branding,
     }, indent=2, default=str))
-    if errors or not chk['ties_to_invoice']:
+    if errors or not chk['ties_to_invoice'] or branding:
         sys.exit(1)
 
 

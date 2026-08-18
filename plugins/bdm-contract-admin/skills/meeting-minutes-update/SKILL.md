@@ -17,10 +17,14 @@ description: >-
 
 # Meeting Minutes Update Skill
 
-**Revision: R2 · 2026-06** (check this against the latest package in
-`Alfred\_Skills\meeting-minutes-update\` — filename carries the revision, e.g.
-`meeting-minutes-update_R2_2026-06.skill`. If your installed copy shows an older
-revision, reinstall the latest.)
+**Revision: R3 · 2026-08-18**
+
+This skill ships inside the `bdm-contract-admin` plugin. Its revision is the plugin's
+revision — check `.claude-plugin/plugin.json` and update the plugin, not a loose file.
+
+> R2 pointed at a personal `_Skills` folder and a standalone `.skill` install. Both are
+> retired: the folder existed for one person, and the estate now runs plugins. Never
+> resolve a sibling skill through a user's home directory.
 
 Updates an existing Meeting Minutes Word document to reflect the latest meeting
 discussion by reviewing a transcript or notes, applying tracked changes, updating
@@ -80,6 +84,11 @@ current user's home directory (see `bdm-house-style` § 7 — never hardcode a u
 
 - **Design coordination meetings** -> `230-Design_Meeting_Minutes` (use the highest
   Rn in `200 Project Management - Pre-Contract\`; ignore anything under `_Superseded`).
+- **PCG meetings** -> `231-PCG_Meeting_Minutes` (currently **R3**). PCG minutes are the
+  one case that does **not** start from a template: a PCG series rolls forward from the
+  **prior live `.docx`**, not from Form 231. Take the previous meeting's issued file and
+  update it. Use Form 231 only to start a brand-new PCG series, or to reconcile formatting
+  when the template revision has moved.
 - Pull the latest revision and reconcile against it. Do NOT use the generic
   `T218_Meeting Minutes` skeleton in the New Job Folder for a design meeting -- it is
   the old generic form and has been superseded by Form 230 for design meetings.
@@ -98,12 +107,46 @@ The process has four phases:
 
 ---
 
+## Phase 0: Project context (do this before anything else)
+
+Read the project sandbox before touching the minutes:
+`<project>/00_ai_sandbox/Project_Summary_*.md`.
+
+- Match with the wildcard — there is exactly **one** per sandbox.
+- Handle `00_ai_sandbox` and `00_AI_sandbox` **case-insensitively**.
+- **Never create a stub.** `PROJECT.md` is the retired name — do not read, write or create it.
+- **If it is missing or stale, flag it and continue.** It is not a blocker. This severity is
+  standing across every BDM skill (`bdm-house-style` § 13.3) — do not hard-stop on it.
+
+Take from it: project name and number, key people, meeting history (which meeting number is
+next), open actions carried from the last meeting, and the decisions log.
+
+**Write back to it when you deliver** (Phase 4): append the meeting to the meeting history,
+update the live open-actions register, and append any new decisions with the date. A set of
+minutes that does not update the sandbox leaves the next meeting starting from stale facts.
+
+---
+
 ## Phase 1: Analyse
 
 ### Pull attendees and apologies from the Outlook calendar (do this FIRST)
 
-Auto-transcription mangles names and never carries email addresses or initials, so
-the meeting's Outlook calendar event is the source of truth for the attendee block.
+Auto-transcription mangles names and never carries email addresses or initials, so never
+build the attendee block from the transcript alone.
+
+**Sourcing priority — stop at the first source that answers:**
+
+1. **The previous minutes** for this series — names, initials, companies and spelling already
+   agreed and issued. For a rolling series this is almost always the right answer.
+2. **The Outlook invite** (`.msg` / calendar event) — for a new series, or when someone
+   unexpected attended.
+3. **The Project Summary** key-people table — the fallback.
+
+Never merge the three into a composite list. Where a name differs across sources, use the
+previous minutes' spelling and **flag the discrepancy** rather than silently picking one.
+Company names get corrected once and then re-broken by pulling from a stale source.
+
+The steps below are the Outlook path (source 2).
 
 1. Find the event with `outlook_calendar_search` -- query on the meeting subject
    (e.g. "New Earth - Design Development Meeting") with `afterDateTime` /
@@ -181,21 +224,33 @@ This prevents missed updates and gives you a clear checklist to work through.
 
 ## Phase 2: Plan Changes
 
-### Action item status logic
+### Action item status logic — the drop-closed-items rule
 
-For each existing action item in the minutes, determine its status based on the
-transcript discussion:
+**An action closed at meeting N drops out of meeting N+1 entirely, and the survivors
+renumber.** Never carry a bare "CLOSED OUT" row forward.
 
-- **Close** -- Item confirmed complete or no longer relevant. Apply strikethrough
-  to the entire row's text content using tracked deletion, or mark with a status
-  indicator depending on the document's existing convention.
-- **Update** -- Item discussed with new information. Add the new information as a
-  tracked insertion, either appending to the existing description or adding a new
-  sub-item row.
-- **No change** -- Item not discussed or confirmed as ongoing with no new info.
-  Leave untouched.
-- **New** -- Discussion raised a topic not covered by any existing item. Add a new
-  row with the next sequential item number.
+For each existing action item, decide one of three outcomes:
+
+- **Closed** -- confirmed complete or no longer relevant. Record the closure and its outcome
+  in **this** set of minutes (tracked deletion of the row, or the document's existing closure
+  convention). In the **next** set it is gone. The audit trail is the minutes of the meeting
+  where it closed, plus the decisions log in the Project Summary — not an ever-growing tail of
+  dead rows.
+- **Open, updated** -- discussed with new information. Add the new information as a tracked
+  insertion, appending to the existing description or adding a sub-item row.
+- **Open, unchanged** -- not discussed, or confirmed ongoing with no new information. Leave
+  untouched and carry forward.
+
+**New** items — a topic no existing item covers — get a new row with the next sequential
+number in that section.
+
+> A register that accumulates closed rows stops being readable by about meeting six, and
+> people start missing live items among the dead ones. This rule was set deliberately; do not
+> reintroduce a "no change / closed out" carry-forward.
+
+**Renumbering.** When closed items drop out, survivors renumber to stay sequential. Do the
+renumbering as tracked changes so the reader can see an item moved from 3.4 to 3.2 rather than
+wondering whether 3.4 vanished.
 
 ### Numbering convention
 
@@ -233,6 +288,19 @@ python scripts/office/unpack.py minutes.docx unpacked/
 python scripts/office/pack.py unpacked/ updated_minutes.docx --original minutes.docx
 ```
 
+### The tracked-change author
+
+Every `w:author` attribute carries **the acting PM's name**, resolved at run time per
+`bdm-house-style` § 9.5 — the person who will issue the minutes. Substitute it for
+`{{ACTING_PM}}` in every pattern below.
+
+Never write `Claude` as the author: the minutes are BDM's instrument and the revision marks
+are read by the builder, the consultants and the client. Never hardcode any individual's name
+either — this skill runs for every BDM PM.
+
+Use the same author string on every insertion and deletion in one pass, or Word groups the
+changes under two reviewers and the accept-all becomes a two-step job.
+
 ### Track Changes XML -- critical patterns
 
 Every change must use proper OOXML tracked change markup.
@@ -245,13 +313,13 @@ mistake.
 
 ```xml
 <!-- CORRECT: del and ins are siblings of w:r at the paragraph level -->
-<w:del w:id="100" w:author="Claude" w:date="2026-06-07T00:00:00Z">
+<w:del w:id="100" w:author="{{ACTING_PM}}" w:date="2026-06-07T00:00:00Z">
   <w:r>
     <w:rPr><!-- copy original formatting --></w:rPr>
     <w:delText>old text</w:delText>
   </w:r>
 </w:del>
-<w:ins w:id="101" w:author="Claude" w:date="2026-06-07T00:00:00Z">
+<w:ins w:id="101" w:author="{{ACTING_PM}}" w:date="2026-06-07T00:00:00Z">
   <w:r>
     <w:rPr><!-- copy original formatting --></w:rPr>
     <w:t>new text</w:t>
@@ -282,7 +350,7 @@ a specific element order within `<w:trPr>`.
 <w:tr w:rsidR="00000000" w14:paraId="1AAABBBB" w14:textId="77777777">
   <w:trPr>
     <w:trHeight w:val="283"/>
-    <w:ins w:id="105" w:author="Claude" w:date="2026-06-07T00:00:00Z"/>
+    <w:ins w:id="105" w:author="{{ACTING_PM}}" w:date="2026-06-07T00:00:00Z"/>
   </w:trPr>
   <w:tc>...</w:tc>
   <w:tc>...</w:tc>
@@ -387,7 +455,7 @@ the existing paragraph content:
 <!-- Existing text stays untouched -->
 <w:r><w:rPr>...</w:rPr><w:t>Original description text.</w:t></w:r>
 <!-- New text added as tracked insertion -->
-<w:ins w:id="108" w:author="Claude" w:date="...">
+<w:ins w:id="108" w:author="{{ACTING_PM}}" w:date="...">
   <w:r>
     <w:rPr>...</w:rPr>
     <w:t xml:space="preserve"> Updated: new information from latest meeting.</w:t>
@@ -420,8 +488,8 @@ causes are:
 
 ### Content diff check
 
-The pack script also checks that removing Claude's tracked changes produces the
-original text. If you see "Document text doesn't match after removing Claude's
+The pack script also checks that removing the tracked changes produces the
+original text. If you see "Document text doesn't match after removing the
 tracked changes", it means either:
 
 1. You modified text outside of tracked change markup
@@ -491,6 +559,19 @@ Before delivering, verify:
 - No stale references to the previous meeting's date remain
 - For updates: Track Changes are NOT accepted -- leave them visible for review
 - Document is visibly marked DRAFT until the user signs it off (BDM drafting rule)
+- **No orphaned spacer bullets.** BDM templates carry an empty spacer bullet whose numbering
+  properties are `numPr` with `numId=0`. **Never clone that row to make a new bullet** — the
+  clone inherits `numId=0` and renders as an un-numbered, un-bulleted orphan line that looks
+  like a formatting fault in the issued PDF. Clone a real bullet and edit its text.
+- **Header and footer edits were made untracked.** Meeting number, date and document
+  reference in the header/footer are edited with tracking **off**, then tracking is turned
+  back on for the body. Tracked header changes render as revision marks on every page and
+  make the document unreadable. Say in the hand-back that the header/footer was updated
+  untracked.
+- **Closed items have dropped out and survivors have renumbered** — no "CLOSED OUT" rows
+  carried forward
+- Tracked-change author is the **acting PM**, not `Claude` and not a hardcoded name
+- Calibri throughout; no Aptos (`bdm-house-style` § 2)
 
 ---
 
@@ -523,3 +604,12 @@ meeting distribution list (the attendees, plus any standing recipients on the pr
 - **Do NOT send the email** -- leave it as a draft for the user to review and send,
   consistent with the BDM rule that client- and contractor-facing communications are
   user-approved before they go out.
+
+---
+
+## Revision control
+
+| Rev | Date | Editor | Change |
+|---|---|---|---|
+| R2 | 2026-06 | James Gill | Packaged issue. |
+| R3 | 2026-08-18 | James Gill | Revision pointer moved from a personal `_Skills` folder to the plugin. Tracked-change author is now the acting PM, resolved at run time, instead of the hardcoded `Claude`. Added Phase 0 project-sandbox integration (read and write-back, flag-don't-block severity). Added the Form 231 PCG R3 path — PCG series roll forward from the prior live `.docx`, not a template. Replaced the Close / Update / No change / New logic with the drop-closed-items rule and renumbering. Added the attendee sourcing priority, the spacer-bullet trap and the untracked header/footer convention. |

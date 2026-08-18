@@ -20,12 +20,18 @@ J This Claim (=I-G)   K To Complete (=E-I)
 Roll-forward: set **G := prior certificate's I**, then update **I** from the new claim →
 **J** computes. Subtotal row 46 (`I46`, `G46`, `J46`). Retention `I76`
 (`=-(I46+I71)*rate`, or `=-MIN((I46+I71)*rate, contract*cap)` for a capped rate).
+Builder's margin `I56` does **not** roll forward by itself - set `builders_margin` in
+the config or it keeps last month's figure.
 
 ## 02 Certificate — chain
 ```
 F22 Contract Works      = 03!I46
 F25 Works to date       = F22 + variations
 F28 Less Cash Retention = 03!I76
+    GUARD: if F28 reads ='03 Trade Breakdown'!G88*-1 that is the UNFIXED MATERIALS
+    defect - prior unfixed materials are never added back. Correct formula:
+    =-('03 Trade Breakdown'!G88-'03 Trade Breakdown'!G58)
+    Left unfixed this over-certified one draft by $1,533,071.32 ex GST.
 F30 Net Value to Date   = F25 + F27 + F28
 F32 Less Previous Net   = -(prior net recommendation)   <- certificate-level roll-forward
 F34 Net this claim      = F30 + F32

@@ -1,11 +1,12 @@
 ---
 name: bdm-site-and-adhoc-minutes
-description: Draft NEW meeting minutes for SITE MEETINGS and AD-HOC / WORKSHOP / KICKOFF meetings only. NOT for PCG or any recurring meeting series — those use `meeting-minutes-update` to roll a master document forward each cycle. Trigger on "site meeting minutes", "SM###", "write up today's site walk", "workshop minutes", "WS###", "ad-hoc meeting", "kickoff minutes", or a transcript / notes from a one-off meeting. Auto-increments the meeting number from the project folder, rolls forward and auto-closes actions from the prior meeting based on the transcript, and updates the project sandbox PROJECT.md with new actions / decisions / meeting history. Pairs with `bdm-pdf-export` for a Word-faithful PDF. If the user mentions PCG, monthly client meetings, fortnightly status, or design coordination, hand off to `meeting-minutes-update` instead.
+description: Draft NEW meeting minutes for SITE MEETINGS and AD-HOC / WORKSHOP / KICKOFF meetings only. NOT for PCG or any recurring meeting series — those use `meeting-minutes-update` to roll a master document forward each cycle. Trigger on "site meeting minutes", "SM###", "write up today's site walk", "workshop minutes", "WS###", "ad-hoc meeting", "kickoff minutes", or a transcript / notes from a one-off meeting. Auto-increments the meeting number from the project folder, rolls forward and auto-closes actions from the prior meeting based on the transcript, and updates the project sandbox Project Summary with new actions / decisions / meeting history. Pairs with `bdm-pdf-export` for a Word-faithful PDF. If the user mentions PCG, monthly client meetings, fortnightly status, or design coordination, hand off to `meeting-minutes-update` instead.
 type: process
-template_revision: R2
+template_revision: R3
 issued: 2026-05-20
+revised: 2026-08-18
 approved_by: James Gill
-maintained_by: BDM Standards Agent
+maintained_by: BDM Standards
 parent_skill: bdm-house-style
 related_skills: bdm-pdf-export, meeting-minutes-update, bdm-house-style
 template_source: 232-Meeting_Memorandum_R<latest>_<YYYY-MM>.docx (Working Copy)
@@ -36,7 +37,7 @@ Typical user phrases:
 
 ## 2. When NOT to use (hand off)
 
-- **PCG meetings (PCG###)** → use `meeting-minutes-update`. James maintains a rolling PCG master document and updates it each cycle with tracked changes — do not start from scratch.
+- **PCG meetings (PCG###)** → use `meeting-minutes-update`. the PCG chair maintains a rolling PCG master document, updated each cycle with tracked changes — do not start from scratch.
 - **Any recurring meeting series** (fortnightly status, monthly client, design coordination, programme reviews) → also `meeting-minutes-update`, same reason.
 - **Updating an existing `.docx`** of minutes (site or otherwise) → `meeting-minutes-update`.
 - **Pre-meeting agendas** — this skill only handles post-meeting write-ups.
@@ -44,7 +45,7 @@ Typical user phrases:
 
 If the user's request is ambiguous (e.g. "draft the minutes" with no series named), ask one sharp clarifying question: *"Site meeting or recurring (PCG / monthly) — different workflow."* Then route accordingly.
 
-## 2. Inputs the user may provide
+## 2a. Inputs the user may provide
 
 - **Transcript file** (`.docx` / `.txt`) — auto-transcribed or typed record.
 - **Pasted bullet notes** — quick brain-dump in chat.
@@ -64,7 +65,13 @@ If the project / series is obvious, just proceed.
 ### Step 1 — Locate the project + meeting folder
 
 - Identify the project folder from the user's request. Project folders live in the SharePoint-synced `Projects - Documents` library under the current user's home directory (`~/BDM/Projects - Documents/<ProjectFolder>/`) — resolve it at runtime, never hardcode a username. See `bdm-house-style` § 7.
-- Read the project sandbox: `<project>/00_ai_sandbox/PROJECT.md`. This is the source of truth for project name, key people, existing meeting history, open actions, decisions log.
+- Read the project sandbox: `<project>/00_ai_sandbox/Project_Summary_*.md` — the source of truth for
+  project name, key people, existing meeting history, open actions and the decisions log.
+  Match with the wildcard (there is exactly one per sandbox), handle `00_ai_sandbox` / `00_AI_sandbox`
+  case-insensitively, and **never create a stub**. `PROJECT.md` is the retired name — do not read,
+  write or create it.
+- **If the Project Summary is missing or stale, flag it and continue.** It is not a blocker. This is
+  the standing severity across every BDM skill (`bdm-house-style` § 13.3) — no skill hard-stops on it.
 - **If the sandbox is missing or stale, flag as a blocker** — do not re-read source files blind (per `bdm-house-style` § 11.2).
 - Identify the meeting subfolder under `<project>/07_Meeting Minutes/`. The PCG pattern (`PCG Meetings/`) is the canonical layout; mirror it for other series:
   - Site Meetings → `07_Meeting Minutes/Site Meetings/`
@@ -109,13 +116,13 @@ Read the user's transcript / notes and build a structured plan **before touching
 
 ```
 META:
-  Project: <from PROJECT.md>
+  Project: <from the Project Summary>
   Meeting no: <from Step 2>
   Date/time: <from transcript or user>
   Location: <Teams / Site / Office>
 
 ATTENDEES / APOLOGIES:
-  <list with name, initials, company, email — pull from PROJECT.md key-people table; ask if any new face attended>
+  <list with name, initials, company, email — pull per the attendee sourcing priority below; ask if any new face attended>
 
 SUMMARY (3–6 sentences, plain prose):
   Headline outcomes, decisions, where the project sits.
@@ -158,33 +165,42 @@ The script handles:
 
 Filename convention: `<prefix>###_<project short name>.docx` — e.g. `SM004_160 Pacific Parade.docx`, `WS002_167 Hedges.docx`.
 
-### Step 7 — Preflight + PDF (calls `bdm-pdf-export` skill)
+### Step 7 — Preflight + PDF (calls `bdm-pdf-export`)
 
-The output `.docx` is built from a BDM template, so all three preflight fixes from `bdm-pdf-export` apply:
+The output `.docx` is built from a BDM template, so the `bdm-pdf-export` preflight applies. Load
+that skill and run its inlined preflight against the new `.docx`, then convert.
 
-```bash
-bash <George>/bdm-pdf-export/scripts/pdf_export.sh "<path to new .docx>"
-```
+It applies four fixes: Aptos-to-Calibri repack (Brand Standard R3 is Calibri-only), `<w:tblGrid>`
+normalisation, cloned-row interior border reset, and content-control placeholder stripping — then
+renders the PDF and verifies it with `pdftoppm`.
 
-This:
-1. Installs Aptos fonts in the sandbox if missing.
-2. Normalises `<w:tblGrid>` in every table.
-3. Resets cloned-row interior borders.
-4. Generates the matching `.pdf` next to the `.docx`.
+> Do **not** call a script path from another user's folder. R2 of this skill called
+> `<personal folder>/bdm-pdf-export/scripts/pdf_export.sh`, which existed for one person and for
+> nobody else — and the script it pointed at did not exist at all. `bdm-pdf-export` is now
+> self-contained; load the skill, don't shell out to a path.
 
-**Never ship a PDF without preflight.** See `bdm-pdf-export/SKILL.md` for why.
+**Never ship a PDF without preflight.** See `bdm-pdf-export` for why.
 
 ### Step 8 — Update the project sandbox
 
-Update `<project>/00_ai_sandbox/PROJECT.md`:
+Update `<project>/00_ai_sandbox/Project_Summary_*.md`:
 
-- **Section: Meeting history** — append a row for the new meeting (number, date, file path).
-- **Section: Open actions register (live)** — move the previous meeting's open actions into a "Closed at <new meeting>" subsection with their outcomes, and create a new "From <new meeting>" table with the rolled-forward + new actions.
-- **Section: Decisions log** — append any new decisions captured in the minutes with the date.
+- **Meeting history** — append a row for the new meeting (number, date, file path).
+- **Open actions register (live)** — carry forward the actions that are still open; record the
+  outcome of anything closed at this meeting.
+- **Decisions log** — append any new decisions captured in the minutes, with the date.
+
+**The drop-closed-items rule.** An action closed at meeting N **drops out of meeting N+1
+entirely**, and the survivors renumber. Do not carry a bare "CLOSED OUT" row forward — a
+register that accumulates closed rows stops being readable by about meeting six, and people
+start missing the live items among the dead ones.
+
+The closure is recorded once, in the minutes of the meeting where it closed, and in the
+decisions log. That is the audit trail. The next set of minutes shows only what is still open.
 
 ### Step 9 — Deliver
 
-Reply with a short "what's in it / what changed" summary plus computer:// links to both the .docx and .pdf. Per `bdm-house-style` § 11.6 — succinct, no excessive postamble.
+Reply with a short "what's in it / what changed" summary plus computer:// links to both the .docx and .pdf. Per `bdm-house-style` § 13.11 — succinct, no excessive postamble.
 
 ```
 [<prefix>### — Word](computer://<full path>.docx)
@@ -193,7 +209,7 @@ Reply with a short "what's in it / what changed" summary plus computer:// links 
 
 ## 5. Tone of the minutes
 
-Write as the project Superintendent / meeting chair (per `bdm-house-style` § 11.4):
+Write as the project Superintendent / meeting chair (per `bdm-house-style` § 13.6):
 
 - Direct. Plain English. Short sentences. Australian spelling.
 - Practical, calm construction tone. No corporate jargon.
@@ -203,4 +219,47 @@ Record **decisions and actions**, not opinions or back-and-forth discussion.
 
 ## 6. Gotchas
 
-- **Don't invent dates, costs, durations, or contract references.** If the transcript is ambiguous (e.g. "next Tuesday"), either leave it as a relative phrase or flag for the user to confirm — don't pick a specif
+- **Don't invent dates, costs, durations, or contract references.** If the transcript is
+  ambiguous (e.g. "next Tuesday"), either leave it as a relative phrase or flag it for the user
+  to confirm — don't pick a specific date and present it as recorded fact. The same applies to
+  dollar values, programme durations, drawing revisions and clause numbers
+  (`bdm-house-style` § 13.1).
+
+- **The spacer-bullet trap.** BDM templates carry an empty spacer bullet whose numbering
+  properties are `numPr` with `numId=0`. **Never clone that row to make a new bullet.** A cloned
+  spacer inherits `numId=0`, which renders as an un-numbered, un-bulleted orphan line that looks
+  like a formatting error in the issued PDF. Clone a real bullet and edit its text.
+
+- **Header and footer edits are made untracked.** When the document carries tracked changes,
+  edits to headers and footers — meeting number, date, document reference — are made with
+  tracking **off**, then tracking is turned back on for the body. Tracked header changes render
+  as revision marks on every page and make the document unreadable. Say in the hand-back that
+  the header/footer was updated untracked.
+
+- **Attendee sourcing priority.** Build the attendees and apologies tables in this order, and
+  stop at the first source that answers:
+
+  1. **The previous minutes** for the same series — the names, initials, companies and spelling
+     already agreed.
+  2. **The Outlook invite** (`.msg`) — for a new meeting, or when someone unexpected attended.
+  3. **The Project Summary** key-people table — the fallback.
+
+  Never merge the three into a composite list. If a name appears differently across sources, use
+  the previous minutes' spelling and flag the discrepancy rather than silently picking one.
+  Company names in particular get corrected once and then re-broken by pulling from a stale
+  source.
+
+- **Match the meeting type to the right skill.** If the transcript turns out to be a PCG,
+  fortnightly status or design coordination meeting, stop and hand off to
+  `meeting-minutes-update` — those roll a master document forward rather than starting fresh.
+
+- **Deliver and file in the same pass** (`bdm-house-style` § 13.7). The `.docx` and `.pdf` go to
+  the meeting folder as well as back to the user. Update the Correspondence Register in the same
+  pass (§ 13.9).
+
+## 7. Revision control
+
+| Rev | Date | Editor | Change |
+|---|---|---|---|
+| R2 | 2026-05-20 | James Gill | Initial packaged issue. |
+| R3 | 2026-08-18 | James Gill | Recovered the truncated § 6 (the file ended mid-sentence and everything after it was lost). `PROJECT.md` replaced with `Project_Summary_*.md` throughout, including as a write target. Missing-sandbox severity aligned to flag-don't-block. Step 7 no longer calls a script in another user's folder — `bdm-pdf-export` is self-contained and Calibri-based. Added the drop-closed-items rule, the spacer-bullet trap, the untracked header/footer convention and the attendee sourcing priority. |

@@ -1,9 +1,22 @@
 {
   "name": "bdm-contract-admin",
-  "version": "1.0.2",
-  "description": "Contract administration under AS4000 — tender clarifications, progress certificates, site inspections, meeting minutes, variations and EOTs.",
-  "author": { "name": "Bentley Development Management" },
+  "version": "2.0.0",
+  "description": "Contract administration under AS4000 — variations and CSAs, EOTs, the Contract Admin Register, progress certificates, tender clarifications and addenda, site inspections and meeting minutes.",
+  "author": {
+    "name": "Bentley Development Management"
+  },
   "homepage": "https://github.com/JamesBDM/bdm-plugins",
   "repository": "https://github.com/JamesBDM/bdm-plugins",
-  "keywords": ["as4000", "superintendent", "variation", "eot", "progress claim", "minutes", "tender"]
+  "keywords": [
+    "as4000",
+    "superintendent",
+    "variation",
+    "csa",
+    "eot",
+    "contract admin register",
+    "progress claim",
+    "minutes",
+    "tender",
+    "addendum"
+  ]
 }

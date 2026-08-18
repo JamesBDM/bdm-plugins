@@ -1,68 +1,84 @@
 ---
 name: bdm-pdf-export
-description: Produces a print-faithful PDF from a BDM-templated Word document (.docx) — one that matches what Microsoft Word renders. Use whenever a BDM deliverable (Meeting Memorandum, Variation Form, EOT Determination, Payment Claim Certificate, Monthly Report, Tender Addendum, QS Report, or any document built on a BDM Form template) needs a PDF copy. Trigger on requests like "save as PDF", "export PDF", "PDF the doc", "print to PDF", "send a PDF copy", "PDF version please", or any time the workflow output is Word + PDF (BDM default for new documents). This skill bundles the three preflight fixes that make LibreOffice-generated PDFs match Word's output: font install (Aptos + Carlito), table grid normalisation (tblGrid → cell widths), and row-border cleanup after cloning rows. Without this skill, PDFs drift from Word — wrong fonts, equal-width columns, mid-word email wrapping, inconsistent row dividers.
-type: process
-template_revision: R1
-issued: 2026-05-18
-approved_by: James Gill
-maintained_by: BDM Standards Agent
-parent_skill: bdm-house-style
-related_skills: bdm-house-style, bdm-contract-admin-router
+description: Produces a print-faithful PDF from a BDM-templated Word document (.docx) — one that matches what Microsoft Word renders. Use whenever a BDM deliverable (Meeting Memorandum, Variation Form, EOT Determination, Progress Certificate, Monthly Report, Tender Addendum, QS Report, Site Inspection Record, or any document built on a BDM Form template) needs a PDF copy. Trigger on requests like "save as PDF", "export PDF", "PDF the doc", "print to PDF", "send a PDF copy", "PDF version please", "signature-ready PDF", or any time the workflow output is Word + PDF (BDM default for new documents). This skill is self-contained — it carries the four preflight fixes that make Linux-generated PDFs match Word's output: Aptos-to-Calibri repack, table grid normalisation, row-border cleanup, and content-control placeholder stripping. Without it, PDFs drift from Word — wrong fonts, equal-width columns, inconsistent row dividers, and "Click or tap here to enter text" printed into issued documents.
+metadata:
+  type: process
+  revision: R2
+  issued: 2026-05-18
+  revised: 2026-08-18
+  approved_by: James Gill
+  maintained_by: BDM Standards
+  parent_skill: bdm-house-style
+  related_skills: bdm-house-style, bdm-contract-admin-router
+  implements: Brand Standard R3 (CN-2026-018)
 ---
 
-# BDM PDF Export — Skill
+# BDM PDF Export
 
-Produces a PDF from a BDM-templated `.docx` that matches Microsoft Word's rendering. The default LibreOffice converter in the sandbox does not match Word out of the box. This skill applies three preflight fixes that close that gap.
+Produces a PDF from a BDM-templated `.docx` that matches Microsoft Word's rendering. The default Linux converter does not match Word out of the box. This skill applies four preflight fixes that close the gap.
+
+**The preflight is self-contained.** It is inlined in this file — there is nothing to locate, install or keep in sync. R1 referenced four scripts that did not exist, and every workflow that chained into it failed.
+
+The one script this skill does ship is `scripts/pdf_export.ps1`, the Windows/Word path (§ 4). That one is real, and it is the preferred route on a BDM workstation.
 
 ## 1. When to use
 
-- Any time the deliverable rule is "Word + PDF" (BDM default for new documents — see `bdm-house-style` § 9)
+- Any time the deliverable rule is "Word + PDF" (BDM default for new documents — see `bdm-house-style` § 11)
 - Whenever the user says "save as PDF", "export PDF", "PDF copy", "print to PDF", "PDF version"
-- After finalising any BDM Form: 232 (Meeting Memorandum), 233 (PC Certificate), 342 (EOT), 343 (Variation), QS Report, Monthly Report, Tender Addendum
+- After finalising any BDM Form deliverable
 - After any project work where rows have been added to a template's tables (action register, attendee list, variation line items, EOT day breakdown)
 
 **Don't use for:**
 
-- Non-BDM documents (generic reports, ad-hoc Word docs that don't use a BDM template) — the default LibreOffice converter is fine
+- Non-BDM documents (generic reports, ad-hoc Word docs that don't use a BDM template)
 - Documents the user has already exported to PDF themselves via Word
 
-## 2. What the skill does (the three fixes)
+> **Form numbers are deliberately not listed here.** R1 listed them and disagreed with
+> `bdm-contract-admin-router`, `bdm-house-style` and the Forms Contents Index. Until the
+> form-number map is settled (pending decision), cite the form by **name**, and take the
+> number from `001-Forms Contents Index` at run time. Do not copy a form number from
+> another skill.
 
-Each fix corrects metadata that **Microsoft Word silently overrides** but **LibreOffice respects literally**. The `.docx` itself is unchanged from Word's perspective — the fixes only correct the parts of the file that LibreOffice interprets differently.
+## 2. The four fixes
 
-### Fix 1 — Install Microsoft fonts (one-time per session)
+Each corrects metadata that **Microsoft Word silently overrides** but the Linux converter respects literally. Word's rendering of the `.docx` is unchanged by any of them.
 
-The sandbox resets between sessions. Carlito (Calibri-compatible) is pre-installed; **Aptos must be downloaded**. BDM templates use Aptos as their primary face — without it, LibreOffice falls back to a serif and the PDF looks completely off-brand.
+### Fix 1 — Repack Aptos to Calibri
 
-Run once at the start of any session that will produce a PDF:
+Brand Standard R3 makes the estate **Calibri-only**. Older templates and any document authored under R2 still carry `w:ascii="Aptos"`. The preflight rewrites every Aptos font reference — in the document body, styles, theme, headers and footers — to Calibri.
 
-```bash
-bash scripts/install_fonts.sh
-```
-
-The script pulls the Aptos family (regular, bold, italic, display, narrow, black, extrabold) from the `ironveil/ttf-aptos` GitHub mirror, drops them in `~/.local/share/fonts/aptos/`, and refreshes the font cache. Idempotent — safe to re-run.
+> R1 instead **downloaded** the Aptos family from a public GitHub mirror. That step is
+> removed: the mirror 404s on every filename, and it existed to satisfy a brand rule R3 has
+> since replaced. **Do not reinstate a font download.** Carlito (metric-compatible with
+> Calibri) is already present on the converter and is what actually renders.
 
 ### Fix 2 — Normalise table grid widths
 
-BDM templates ship with an "auto-equal" `<w:tblGrid>` while the actual cells are proportional. Word uses the cells; LibreOffice uses the grid. Result: equal-width columns in the PDF where Word shows narrow / wide / narrow.
-
-The preflight script rewrites each table's `<w:tblGrid>` to match the first row's cell widths.
+BDM templates ship with an "auto-equal" `<w:tblGrid>` while the actual cells are proportional. Word uses the cells; the converter uses the grid. Result: equal-width columns where Word shows narrow / wide / narrow. The preflight rewrites each table's `<w:tblGrid>` to match the first row's cell widths.
 
 ### Fix 3 — Reset interior row borders after cloning
 
-When extra rows are inserted into a template table by deep-copying the last existing row, those new rows inherit the table's **closing-edge bottom border** (thick navy, sz=16 colour=0F1721). Original interior rows have a thin grey divider (sz=4 colour=D8D7D3). Result: a visible "darker line" jump partway down the table.
+Rows inserted by deep-copying the last existing row inherit the table's **closing-edge bottom border** (navy, `sz=16`, `#0F1721`). Interior rows should carry the grey-3 hairline (`sz=4`, `#D8D7D3`). Result: a visible "darker line" jump partway down the table. The preflight sets every data row except the genuine last one to the interior style.
 
-The preflight script sets every data row except the actual last one to the interior border style.
+### Fix 4 — Strip Word content-control placeholders
 
-## 3. How to run
+Unfilled Word content controls print their prompt text. **110 instances of "Click or tap here to enter text" printed into a live execution pack.** The preflight deletes the whole `<w:sdt>` element.
 
-**Inputs:**
-- Path to the `.docx` file
-- Output folder for the `.pdf` (typically same folder as the `.docx`)
+Three rules, all load-bearing:
 
-### Windows (preferred on BDM workstations)
+- **Detect by the accepted text, never by `showingPlcHdr`.** The flag is unreliable — controls that have been clicked into and left empty no longer carry it but still print the prompt.
+- **Leave checkbox content controls alone.** They are legitimate form furniture.
+- **Leave `[insert …]` text in Annexure Parts C–H alone.** Those are intentional completion prompts in the execution version, not stray placeholders.
 
-Use Microsoft Word directly. This is the most faithful renderer and does not need the LibreOffice preflight fixes:
+## 3. Before you convert — the Word-side step
+
+If the document has tracked changes, set **Review → Display for Review → No Markup** before exporting. Otherwise the markup prints. This is a display setting, not an accept-all: it does not alter the document, and the tracked changes survive for the reviewer.
+
+If the deliverable is deliberately a tracked draft (see `bdm-house-style` § 13.6), skip this and say so.
+
+## 4. Windows — use Word (preferred on BDM workstations)
+
+Microsoft Word is the most faithful renderer of a BDM template. On a Windows workstation, use it:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pdf_export.ps1 "C:\path\report.docx"
@@ -70,52 +86,207 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pdf_export.ps1 "C:\p
 
 The script writes the PDF beside the Word document unless a second output path is supplied. It opens the source read-only, disables background printing, retries transient Word automation rejections up to three times, and cleans up only invisible Word processes created by a failed attempt. It fails if the PDF is missing or empty. If a visible Word session has the document locked, stop and report the lock.
 
-### Linux / headless environments
+**Which fixes still apply on the Windows path?**
 
-**Steps:**
+| Fix | Needed on Windows? |
+|---|---|
+| 1 — Aptos → Calibri | **Yes.** This is a *brand* fix, not a rendering fix. Word will happily render Aptos; Brand Standard R3 says it must not. |
+| 2 — table grid widths | No. Word uses the cell widths already. |
+| 3 — cloned row borders | No. Word resolves these correctly. |
+| 4 — content-control placeholders | **Yes.** Word prints unfilled control prompts. This is where the 110 "Click or tap here to enter text" came from — on Word, not on the converter. |
+
+So on Windows: run the preflight (§ 5) for fixes 1 and 4, set **No Markup** (§ 3), then export with the PowerShell script. Fixes 2 and 3 are no-ops there and cost nothing.
+
+---
+
+## 5. Run the preflight
+
+Save as `bdm_preflight.py` in a scratch directory and run it against the `.docx`. It edits in place.
+
+```python
+#!/usr/bin/env python3
+"""BDM PDF preflight — four fixes. Edits a .docx in place."""
+import re, shutil, sys, zipfile
+from lxml import etree
+
+W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+NS = {"w": W}
+def q(t): return "{%s}%s" % (W, t)
+
+PLACEHOLDER_TEXT = re.compile(
+    r"^\s*(click or tap here to enter text|click here to enter text|"
+    r"choose an item|click or tap to enter a date|enter text)\.?\s*$", re.I)
+
+INTERIOR = {"val": "single", "sz": "4",  "space": "0", "color": "D8D7D3"}
+CLOSING  = {"val": "single", "sz": "16", "space": "0", "color": "0F1721"}
+
+def fix_fonts(root):
+    """Fix 1 — every Aptos reference becomes Calibri."""
+    n = 0
+    for el in root.iter():
+        for a, v in list(el.attrib.items()):
+            if isinstance(v, str) and "aptos" in v.lower():
+                el.set(a, re.sub(r"Aptos[\w ]*", "Calibri", v))
+                n += 1
+    return n
+
+def fix_grids(root):
+    """Fix 2 — tblGrid follows the first row's actual cell widths."""
+    n = 0
+    for tbl in root.iter(q("tbl")):
+        grid = tbl.find(q("tblGrid"))
+        row = tbl.find(q("tr"))
+        if grid is None or row is None:
+            continue
+        widths = []
+        for tc in row.findall(q("tc")):
+            tcW = tc.find(q("tcPr") + "/" + q("tcW"))
+            if tcW is None or tcW.get(q("w")) is None:
+                widths = []
+                break
+            widths.append(tcW.get(q("w")))
+        if not widths:
+            continue
+        cols = grid.findall(q("gridCol"))
+        if len(cols) != len(widths):
+            continue
+        for col, wdt in zip(cols, widths):
+            if col.get(q("w")) != wdt:
+                col.set(q("w"), wdt)
+                n += 1
+    return n
+
+def fix_borders(root):
+    """Fix 3 — only the genuine last row keeps the closing edge."""
+    n = 0
+    for tbl in root.iter(q("tbl")):
+        rows = tbl.findall(q("tr"))
+        for i, tr in enumerate(rows):
+            style = CLOSING if i == len(rows) - 1 else INTERIOR
+            for tc in tr.findall(q("tc")):
+                tcPr = tc.find(q("tcPr"))
+                if tcPr is None:
+                    continue
+                borders = tcPr.find(q("tcBorders"))
+                if borders is None:
+                    continue
+                bottom = borders.find(q("bottom"))
+                if bottom is None:
+                    continue
+                if any(bottom.get(q(k)) != v for k, v in style.items()):
+                    for k, v in style.items():
+                        bottom.set(q(k), v)
+                    n += 1
+    return n
+
+def fix_placeholders(root):
+    """Fix 4 — delete unfilled content controls. Detect by text, not showingPlcHdr."""
+    n = 0
+    for sdt in list(root.iter(q("sdt"))):
+        pr = sdt.find(q("sdtPr"))
+        # leave checkbox controls alone
+        if pr is not None and any("checkbox" in etree.QName(c).localname.lower()
+                                  for c in pr.iter() if isinstance(c.tag, str)):
+            continue
+        content = sdt.find(q("sdtContent"))
+        if content is None:
+            continue
+        text = "".join(t.text or "" for t in content.iter(q("t")))
+        # leave deliberate completion prompts alone (Annexure Parts C-H)
+        if text.strip().lower().startswith("[insert"):
+            continue
+        if not PLACEHOLDER_TEXT.match(text):
+            continue
+        parent = sdt.getparent()
+        if parent is not None:
+            parent.remove(sdt)
+            n += 1
+    return n
+
+PARTS = re.compile(r"^word/(document|styles|theme/theme\d+|(header|footer)\d+)\.xml$")
+
+def main(path):
+    shutil.copy2(path, path + ".preflight.bak")
+    zin = zipfile.ZipFile(path)
+    items = zin.infolist()
+    blobs = {i.filename: zin.read(i.filename) for i in items}
+    zin.close()
+    tally = {"fonts": 0, "grids": 0, "borders": 0, "placeholders": 0}
+    for name in list(blobs):
+        if not PARTS.match(name):
+            continue
+        root = etree.fromstring(blobs[name])
+        tally["fonts"] += fix_fonts(root)
+        if name == "word/document.xml":
+            tally["grids"] += fix_grids(root)
+            tally["borders"] += fix_borders(root)
+            tally["placeholders"] += fix_placeholders(root)
+        blobs[name] = etree.tostring(root, xml_declaration=True,
+                                     encoding="UTF-8", standalone=True)
+    # [Content_Types].xml must be first in the archive
+    order = ["[Content_Types].xml"] + [i.filename for i in items
+                                       if i.filename != "[Content_Types].xml"]
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zout:
+        for name in order:
+            zout.writestr(name, blobs[name])
+    print("preflight:", ", ".join("%s=%d" % kv for kv in tally.items()))
+    return tally
+
+if __name__ == "__main__":
+    main(sys.argv[1])
+```
+
+Requires `lxml` (`pip install lxml --break-system-packages` if absent). A `.preflight.bak` is written next to the file before anything is changed.
+
+## 6. Convert — Linux / headless
+
+Resolve the converter at run time — **never hardcode a session path.** R1 hardcoded `/sessions/<session-id>/…`, which is different on every run and every machine.
 
 ```bash
-# 1. Install fonts (skip if already done this session)
-bash scripts/install_fonts.sh
+SOFFICE=$(find / -path "*/skills/docx/scripts/office/soffice.py" 2>/dev/null | head -1)
+[ -z "$SOFFICE" ] && SOFFICE=$(command -v soffice || command -v libreoffice)
 
-# 2. Run the three-step preflight in-place on the .docx
-python3 scripts/preflight.py "/path/to/document.docx"
-
-# 3. Convert to PDF via LibreOffice
-python3 /sessions/<session-id>/mnt/.claude/skills/docx/scripts/office/soffice.py \
-    --headless --convert-to pdf "/path/to/document.docx" \
+python3 "$SOFFICE" --headless --convert-to pdf "/path/to/document.docx" \
     --outdir "/path/to/output/folder"
 ```
 
-The preflight script edits the `.docx` in place (the grid normalisation and border reset are non-destructive — Word renders identically before and after). The file is then ready for LibreOffice conversion.
+If neither resolves, say so and stop. Do not fall back to a different converter without saying which one produced the file.
 
-**One-command wrapper:**
-```bash
-bash scripts/pdf_export.sh "/path/to/document.docx"
-```
-Runs all three steps in sequence and writes the PDF next to the `.docx`.
+## 7. Verify — always
 
-## 4. Verification (always do this)
-
-After conversion, eyeball the PDF before delivering:
-
-- Page 1 — does the masthead font look right? (Aptos has a distinctive `g` and `R`.)
-- Largest table — are the column proportions correct? (Compare to the Word version.)
-- Any cloned-row tables — are all interior dividers the same colour? Only the very last row should have the thick closing edge.
-- Page numbers and headers/footers — should match Word.
-
-If anything looks wrong, re-run preflight and report — the script logs which tables and rows it changed.
-
-## 5. Source of these fixes
-
-All three issues were discovered in real BDM work. PCG006 on 160 Pacific Parade (18 May 2026) was the first deliverable where all three were applied end-to-end against Form 232 R2 (Meeting Memorandum).
-
-## 6. Maintenance
-
-When BDM Standards issues a new template revision (e.g. Form 232 R3, Form 343 R2), spot-check the template's metadata using:
+Render the pages to images and actually look at them:
 
 ```bash
-python3 scripts/inspect_template.py "/path/to/Form-XXX_RX.docx"
+pdftoppm -png -r 70 "/path/to/document.pdf" /tmp/check
 ```
 
-The inspector reports tblGrid vs cell-width mismatches and any other quirks. If a new template fixes the underlying issue at source, this skill's preflight becomes a no-op (safe) rather than necessary.
+Then check:
+
+- **Fonts** — Calibri (or Carlito) throughout. No serif fallback, no Aptos.
+- **Tables** — column proportions match the Word version.
+- **Cloned rows** — every interior divider the same grey. Only the very last row carries the thick navy closing edge.
+- **Placeholders** — no "Click or tap here to enter text" anywhere. Search the extracted text, don't just eyeball it.
+- **Headers, footers, page numbers** — match Word.
+- **Margins** — 2.2 cm all round per `bdm-house-style` § 4.
+
+If anything is wrong, re-run the preflight from the `.bak` and report which fix did not take.
+
+## 8. Signature-ready output
+
+A PDF is **not** signature-ready until **both** of these are true:
+
+1. The acting PM's signature image is embedded, **2.25 cm** wide, resolved per `bdm-house-style` § 9.3 — `<PM home>/<INITIALS>_signature.png`. If the acting PM has no signature on file, flag it and ask. Never substitute another person's signature.
+2. The literal word **"Date"** in the sign-off block is **replaced** with the actual date in `DD MMM YYYY` form, Brisbane time.
+
+One without the other is a failed deliverable. A signed document still reading "Date" goes back for rework, and it has happened.
+
+## 9. Maintenance
+
+When BDM Standards issues a new template revision, run the preflight against it and read the tally. A template that reports `grids=0, borders=0, placeholders=0` has fixed the underlying issues at source, and the preflight is a safe no-op for it. `fonts=0` means the template is already on R3 Calibri.
+
+## 10. Revision control
+
+| Rev | Date | Editor | Change |
+|---|---|---|---|
+| R1 | 2026-05-18 | James Gill | Initial issue. Three fixes via four companion scripts. |
+| R2 | 2026-08-18 | James Gill | Rewritten self-contained — the four referenced scripts never existed and every dependent skill failed with them. Preflight inlined. Aptos download removed (dead mirror, superseded by Brand Standard R3); Fix 1 is now an Aptos-to-Calibri repack. Added Fix 4 (content-control placeholder stripping) and the No Markup step. Converter path resolved at run time instead of a hardcoded session path. Added `pdftoppm` render verification and the signature-ready definition. Retained the Windows/Word export path added 17 Aug and mapped which fixes apply to it. Form numbers removed pending the form-number decision. |

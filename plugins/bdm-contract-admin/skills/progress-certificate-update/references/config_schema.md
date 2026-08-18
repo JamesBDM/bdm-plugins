@@ -22,7 +22,8 @@ documents, then passes it to `scripts/build_certificate.py --config`.
 | `valuation_date` | "YYYY-MM-DD" | "Work completed to" date from the claim. |
 | `issue_date` | "YYYY-MM-DD" | Date BDM issues the certificate. |
 | `previous_net` | number | Prior certificate's NET recommendation ex GST (positive; script negates). |
-| `contract_form` | string | e.g. "Amended AS4000-1997". Drives cl.37.2 wording. |
+| `contract_form` | string | **MANDATORY - no default.** e.g. "Amended AS4000-1997". Read it off the executed contract. Drives the cl.37.2 wording in the cover letter body, footer strapline, Annexure A footnote and covering paragraph. The script aborts if absent; a silent `AS4000-2024` default put the wrong edition on two issued certificates. |
+| `builders_margin` | object or number | `{"rate": 0.06}` to recompute the margin on this claim's value, or an absolute amount. If omitted, `03!I56` keeps the PRIOR certificate's margin and the build warns. |
 | `revision` | string | Shown in 00 Project Details (e.g. "R4 DRAFT"). |
 | `retention.rate` | number | Fraction, e.g. 0.10. |
 | `retention.cap_pct` | number | Optional. Fraction of contract sum, e.g. 0.05 → "10% to a 5% cap". Omit for flat rate. |
