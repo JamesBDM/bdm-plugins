@@ -11,7 +11,7 @@ The foundation. Install this first — the contract admin skills assume it.
 |---|---|
 | `bdm-house-style` | The always-on rulebook: palette, typography, logo, layout, filename convention, QA checklist, template locations, working rules |
 | `bdm-pdf-export` | Word-faithful PDF export (Aptos install, table grid normalisation, row border cleanup) |
-| `datum-markup` | Editable markups, measurements and priced BOQ takeoffs written straight into a PDF for Datum |
+| `datum-markup` | Editable markups, measurements, priced BOQ takeoffs and presentation layouts written straight into a PDF for Datum |
 
 ### BDM Contract Admin
 Contract administration under AS4000.
