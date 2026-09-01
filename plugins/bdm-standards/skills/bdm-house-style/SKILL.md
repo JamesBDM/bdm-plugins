@@ -15,7 +15,7 @@ metadata:
 
 Every BDM document obeys these rules, whatever produced it and whoever it is going to. When a workflow skill (contract admin, reporting, minutes) cites a brand rule, it points back here rather than redefining it. **If a workflow skill contradicts this file, this file wins** — flag the conflict so it gets fixed at source rather than quietly forked.
 
-This revision implements **Brand Standard R3 (CN-2026-018)**. Where a document, template or skill still follows R2, R3 supersedes it.
+This revision implements **Brand Standard R3 (CN-2026-018)**, plus the § 13.12 document-location ruling of 1 September 2026. Where a document, template or skill still follows R2, R3 supersedes it.
 
 ---
 
@@ -253,15 +253,26 @@ These are the standing BDM rules every workflow skill assumes. They live here so
 
 **13.6 Draft, don't issue.** Skills produce DRAFTS held for a human to review and issue. Nothing goes to a contractor, client or lender without the responsible person sending it. Where a document is a tracked-changes draft for review, leave track changes on deliberately and say so.
 
-**13.7 File the deliverable in the same pass.** Producing a document and filing it are one job, not two. In the same pass: deliver the file to the user **and** write it to its project folder. A file that exists only in the session is not a deliverable.
+**13.7 File the deliverable in the same pass.** Producing a document and filing it are one job, not two. In the same pass: deliver the file to the user **and** write it to its project folder — the folder set by § 13.12. A file that exists only in the session is not a deliverable.
 
 **13.8 Link every file.** Every file created, edited or referenced is cited with a `computer://` link using the **Windows path**, not the mount path.
 
 **13.9 Filing a final document updates the registers.** In the same pass as filing: update the Project Summary change log **and** `Correspondence_Register.csv`. The **CSV is the source of truth**; the old `.xlsx` register is retired. The next correspondence reference is `max(COR-nnn) + 1` — **never a row count**, which silently reuses a number as soon as a row is deleted.
 
-**13.10 Clean up.** Sweep temporary and intermediate files when a job finishes. Update the project sandbox with what changed — new actions, decisions, documents issued — so the next run starts from current facts.
+**13.10 Clean up.** Sweep temporary and intermediate files when a job finishes. Scratch and intermediates — recalc copies, converted working files, render previews, `.bak` files, converter lock and temp files — belong in a temp directory outside the project folders in the first place, never beside the deliverable. Update the project sandbox with what changed — new actions, decisions, documents issued — so the next run starts from current facts.
+
+Where the environment refuses a delete on a synced/mounted folder (`Operation not permitted`), request delete permission for that folder. If that is unavailable or declined, **move** the artefacts into `00_ai_sandbox\_to_delete\` under a prefixed name and tell the user what was left there — never leave scratch files sitting alongside an issued document.
 
 **13.11 Reporting back.** A short "what's in it / what changed" summary plus links to the files. No lengthy restatement of the document's contents — the reader can open it.
+
+**13.12 Where a deliverable is saved (locked 1/9/26 — Director ruling).** A deliverable is built and saved **directly in its regular project folder, on the first save**. It is not staged anywhere and then moved when it is "finished" — that step never reliably happens, and a finished document sitting in a working folder is a document nobody can find.
+
+- **If the document type has a folder on that project, the document goes in that folder.** Progress Certificates and Payment Schedules → `13_Contract Admin\01_Main Contract\03_Payment Claims\PC to Builder\<claim folder>\`; CSAs and variation determinations → `...\01_Variations\<VO folder>\`; EOT determinations → `...\02_EOTs\<EOT folder>\`; Tender Clarifications and Addenda → `12_Tender Documents\...\`; site inspection records and issued reports → `08_Issued Reports\`; minutes → `07_Meeting Minutes\<series>\`.
+- **Follow the sub-folder naming already in use on that project** — list the parent folder and match it. Never impose a convention carried in from a skill. Projects number the same thing differently (`30_August EOM`, `24_May 2026`, `PC 024 (May 2026)`); creating a second folder alongside the existing one splits the record. Where the folder already exists — the contractor's own documents usually land there first — **write into it**.
+- **`00_ai_sandbox` is not a staging area for deliverables.** It holds the `Project_Summary_*.md` (§ 13.3), sync and audit logs, ad-hoc and one-off work, and any document that has **no regular home** in the project structure. That is its whole job.
+- **Saving into the final folder is not issuing.** The document stays a DRAFT, held for the responsible person to sign and send (§ 13.6). Never park a finished deliverable in the sandbox to keep it from going out — the DRAFT marking and the signatory placeholder do that.
+- **A revision overwrites the same file in place**, same path and name, so the folder never carries two live versions. Keep a superseded copy in `ss\` only where the project already uses that convention.
+- Never overwrite an existing source project file. Add; do not replace.
 
 ---
 
@@ -271,4 +282,5 @@ These are the standing BDM rules every workflow skill assumes. They live here so
 |---|---|---|---|
 | R1 | 2026-05-06 | James Gill | Initial issue as part of the `bdm-standards` master skill. |
 | R2 | 2026-08-17 | James Gill | Split out as a standalone always-on house style skill. Contract admin routing moved to `bdm-contract-admin-router`. Added § 7 template resolution and § 9 default deliverable format. |
+| R4 | 2026-09-01 | James Gill | Added § 13.12 — deliverables save directly into their regular project folder on the first save; `00_ai_sandbox` is for the project summary, logs, ad-hoc work and documents with no regular home; saving is not issuing. § 13.7 points at it and § 13.10 extended to keep scratch out of project folders and cover refused deletes on synced mounts. |
 | R3 | 2026-08-18 | James Gill | Implements Brand Standard R3 (CN-2026-018). Typography to Calibri-only (Aptos and Arial purged). Added page geometry (A4, 2.2 cm), 2 pt navy header rule estate-wide, 12 pt heading cap, § 5 table specification, prohibited colours, Word heading-style overrides, gold placeholder rendering, Form 040 letterhead start. Replaced the OneDrive `cat`+`sync` write method with an fsync byte-write and added the mount read caveat. `PROJECT.md` retired in favour of `Project_Summary_*.md`. Added § 9 resolving the current user (multi-user) and seven standing rules to § 13. Filename convention (§ 7) and Working Copy subfolder list (§ 8.2) flagged pending decision. |

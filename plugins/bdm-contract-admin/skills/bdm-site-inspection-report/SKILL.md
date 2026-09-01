@@ -4,7 +4,7 @@ description: Build a NEW BDM Site Inspection Record (Form 331) from a site visit
 type: process
 template_revision: R2
 issued: 2026-06-01
-revised: 2026-08-18
+revised: 2026-09-01
 approved_by: James Gill
 maintained_by: BDM Standards
 parent_skill: bdm-house-style
@@ -114,7 +114,10 @@ enrich and cross-check — never to override what the PM saw.
    - **Mirror the finished PDF back to the ProjectHub `contract` bucket** so it is on the record
      against the inspection. A report that exists only on the file share is invisible to
      everyone working from ProjectHub.
-   - Working files stay in the sandbox.
+   - **The report is built straight into `08_Issued Reports\NNN - <short title>\`** — not staged in
+     `00_ai_sandbox` and moved later (`bdm-house-style` § 13.12). Follow the report-folder numbering
+     already in use on that project. Scratch and intermediates (stitched photo temp files, render
+     previews, `.bak`) go to a temp directory outside the project and are swept at the end.
 
 ## 4a. OneNote fallback path
 
@@ -147,7 +150,7 @@ structure instead of a blank page:
 - **PHOTOGRAPHS heading sits with the photos** — a page break is forced before it so the heading never strands at the foot of the observations page.
 - **Blank attendee rows are deleted**, not left empty.
 - **Never invent** dates, costs, contract refs, or attendee names (`bdm-house-style` § 13.1). The inspection date comes from the **ProjectHub record**, or from the OneNote page timestamp on the fallback path.
-- **Writing to the synced folder:** stage in the sandbox, then write with the fsync byte-write in `bdm-house-style` § 8.6 — **not** `cat`+`sync`, which corrupts files. If the target `.docx` is locked (open in Word), say so and ask for it to be closed.
+- **Writing to the synced folder:** build in a temp directory outside the project, then write into `08_Issued Reports\` with the fsync byte-write in `bdm-house-style` § 8.6 — **not** `cat`+`sync`, which corrupts files, and **not** via a sandbox staging copy (§ 13.12). If the target `.docx` is locked (open in Word), say so and ask for it to be closed.
 - **Skip `stitch_photos.py` on the ProjectHub path.** It is a OneNote-only repair.
 
 ## 6. Files
@@ -166,3 +169,4 @@ Built from the Greenwich on Chevron Basement 2 drainage-failure inspection, 1 Ju
 |---|---|---|---|
 | R1 | 2026-06-01 | James Gill | Initial issue. OneNote export as the sole input. |
 | R2 | 2026-08-18 | James Gill | Retains the 17 Aug photo-pagination fix. ProjectHub is now the primary source (inspections / inspection_items / photos); OneNote demoted to a documented fallback. Photos pull in parallel (`xargs -P 8`) — serial download of 40 photos blew a two-minute timeout. `stitch_photos.py` skipped on the ProjectHub path. Added `SIR-ddmmyy` numbering with same-day suffixes, the `contract` bucket mirror, and the planned-vs-actual pre-fill (no carry-over commentary). Inspection date now comes from the ProjectHub record. Captions Aptos -> Calibri per Brand Standard R3. OneDrive write method corrected. |
+| R3 | 2026-09-01 | James Gill | Save location made explicit — the report is built straight into `08_Issued Reports\NNN - <short title>\`; the "working files stay in the sandbox" line and the sandbox-staging step in the synced-folder write are removed. Filing rule aligned to `bdm-house-style` § 13.12 (locked 1/9/26): the deliverable is built and saved directly in its regular project folder on the first save, following the sub-folder naming already in use on that project; no `00_ai_sandbox` staging; scratch and intermediates stay in a temp directory outside the project; saving is not issuing. |

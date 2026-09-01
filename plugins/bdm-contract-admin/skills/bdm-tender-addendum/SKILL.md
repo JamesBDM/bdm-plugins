@@ -5,6 +5,7 @@ metadata:
   type: process
   revision: R1
   issued: 2026-08-18
+  revised: 2026-09-01
   approved_by: James Gill
   maintained_by: BDM Standards
   parent_skill: bdm-house-style
@@ -54,6 +55,12 @@ Take the next number by listing the tender's addenda folder and using `max(exist
 3. **Clone the tender's most recent Addendum** where one exists, then verify it against the current template revision in the templates library. Flag any drift.
 4. **Write the schedule.** One row per change. Every row names the document, the revision it replaces and the revision that replaces it. "Various drawings updated" is not a schedule.
 5. **File the referenced documents alongside** the Addendum, with clear filenames.
+   **Save location:** the Addendum is built and saved directly in the project's tender folder —
+   `12_Tender Documents/Tender/Addenda/Addendum <NN>/`, or whatever subfolder pattern that tender
+   already uses. List the tender folder and follow it; never impose a convention (`bdm-house-style`
+   § 13.12). **Do not stage in `00_ai_sandbox`** — the sandbox is for the Project Summary, logs and
+   documents with no regular home. Scratch and intermediates go to a temp directory outside the
+   project.
 6. **Word + PDF** via `bdm-pdf-export`. Render-check page 1.
 7. **Draft the cover email** for the PM to send — to all tenderers, cc the client/Superintendent, asking for acknowledgement of receipt.
 

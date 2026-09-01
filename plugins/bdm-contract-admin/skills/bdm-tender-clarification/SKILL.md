@@ -5,7 +5,7 @@ type: process
 template_revision: R1
 issued: 2026-06-02
 approved_by: James Gill
-revised: 2026-08-18
+revised: 2026-09-01
 maintained_by: BDM Standards Agent
 parent_skill: bdm-house-style
 related_skills: bdm-pdf-export, bdm-house-style
@@ -51,7 +51,7 @@ Output is always **Word + signature-ready PDF + a cover email draft** for the PM
 |---|---|
 | **Numbering** | **Per tender, restart at TC-01.** Each project's tender opens its own TC-01 sequence. The next number = highest existing TC in that project's tender RFI folder + 1. Legacy "Notice to Tenderers No. X" issued before the TC rename still count toward the sequence — never renumber an already-issued document. |
 | **Build from** | **Clone the project's latest TC**, carry its particulars forward, **then verify the layout against the current Working Copy Form 218 revision** and flag if the clone is stale (older revision). If the project has no prior TC, start from the current Form 218 template. |
-| **Save location** | **Project tender RFI folder, one subfolder per TC:** `12_Tender Documents/Tender/RFI/RFI<NN> - TC<NN>_<Descriptor>/` (RFI folder number tracks the TC number). Keep a working copy in `00_ai_sandbox/TC<NN>_<Descriptor>/`. Follow the project's existing subfolder naming pattern if it differs. |
+| **Save location** | **Built and saved directly in the project tender RFI folder, one subfolder per TC:** `12_Tender Documents/Tender/RFI/RFI<NN> - TC<NN>_<Descriptor>/` (RFI folder number tracks the TC number). **Follow the project's existing subfolder naming pattern** — list the RFI folder and match it, never impose this one. **Do not keep a working copy in `00_ai_sandbox`** (`bdm-house-style` § 13.12) — the sandbox is for the Project Summary, logs and documents with no regular home. Scratch and intermediates go to a temp directory outside the project. |
 | **Deliverables** | **Word + PDF + cover email draft**, every time. |
 | **Signature** | **The signature of the PM creating the TC** (signature-ready PDF), at **2.25 cm** wide. Cloning your own prior TC carries your signature automatically. For another author, swap to their signature PNG (see §5.8). |
 | **cc** | **cc the client / Superintendent by default** — pull the contact from the project summary §2/Key people (e.g. RSL Queensland on 160 Pacific). |
@@ -75,7 +75,7 @@ Output is always **Word + signature-ready PDF + a cover email draft** for the PM
 6. **Build the Word doc.** `python3 scripts/build_tc.py config.json "<out>.docx"` — clones the source TC, fills the particulars table, sets the subtitle/clarification/closing-date text, builds or removes the RFI table (one row per item) and attachments list, **renumbers the Submission/Acknowledgement sections automatically**, and swaps the author block/signature if provided.
 7. **Export the PDF** with `bdm-pdf-export` — load the skill and run its inlined preflight, then convert and render-check. Eyeball page 1 (masthead font, particulars) and the RFI table. *(The old pdf_export shim in this skill's scripts folder is deleted: both paths it searched were dead, and one pointed into a single user's folder.)*
 8. **Signature.** Default is the cloning PM's signature (carried in the clone). To author as a different PM, set `signature_png` to that PM's signature, resolved at run time per `bdm-house-style` § 9.3 — `<PM home>/<INITIALS>_signature.png`, at **2.25 cm**. `build_tc.py` swaps it. **Never hardcode a person's signature path, and never substitute another PM's signature.** If the acting PM has no signature on file, flag it and ask.
-9. **Save the pack.** Word + PDF into `12_Tender Documents/Tender/RFI/RFI<NN> - TC<NN>_<Descriptor>/`, with any referenced drawings filed alongside (clear filenames, e.g. `BE230166_LT2-S1.101_V2_Core-Lift-Pad-Reo.pdf`). Working copy → sandbox. **Writing into the synced folder:** build/convert in `outputs/`, then write with the fsync byte-write in `bdm-house-style` § 8.6 — **not** `cat`+`sync`, which left corrupt files on four projects. Re-open the copies to verify.
+9. **Save the pack.** Word + PDF into `12_Tender Documents/Tender/RFI/RFI<NN> - TC<NN>_<Descriptor>/`, with any referenced drawings filed alongside (clear filenames, e.g. `BE230166_LT2-S1.101_V2_Core-Lift-Pad-Reo.pdf`). That folder is the only home — no sandbox copy (`bdm-house-style` § 13.12). A revision overwrites the same file in place. **Writing into the synced folder:** build/convert in `outputs/`, then write with the fsync byte-write in `bdm-house-style` § 8.6 — **not** `cat`+`sync`, which left corrupt files on four projects. Re-open the copies to verify.
 10. **Draft the cover email** (§7) as chat text for the PM to paste into Outlook (Cowork can't draft to Outlook directly). To: tenderers; cc: client/Superintendent.
 11. **Update the project summary** — add a change-log line (what the TC does, refs, status DRAFT — held for PM to issue). If it extends the close, note to update the close date in §1/§4 **once issued**. Sweep temp files (per `bdm-house-style` § 13.10).
 
