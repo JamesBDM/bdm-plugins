@@ -467,6 +467,13 @@ the existing paragraph content:
 
 ## Phase 4: Validate and Deliver
 
+**Where it saves.** The updated minutes are written back over the live document in the project's
+`07_Meeting Minutes/<series>/` folder — the same path the prior set came from. Nothing is staged in
+`00_ai_sandbox` and moved later (`bdm-house-style` § 13.12); the sandbox's role in this skill is the
+`Project_Summary_*.md` read and write-back (Phase 0). Unpacked working directories, packed test
+copies and validation artefacts live in a temp directory outside the project and are swept when the
+job finishes.
+
 ### Repack with validation
 
 ```bash
@@ -613,3 +620,4 @@ meeting distribution list (the attendees, plus any standing recipients on the pr
 |---|---|---|---|
 | R2 | 2026-06 | James Gill | Packaged issue. |
 | R3 | 2026-08-18 | James Gill | Revision pointer moved from a personal `_Skills` folder to the plugin. Tracked-change author is now the acting PM, resolved at run time, instead of the hardcoded `Claude`. Added Phase 0 project-sandbox integration (read and write-back, flag-don't-block severity). Added the Form 231 PCG R3 path — PCG series roll forward from the prior live `.docx`, not a template. Replaced the Close / Update / No change / New logic with the drop-closed-items rule and renumbering. Added the attendee sourcing priority, the spacer-bullet trap and the untracked header/footer convention. |
+| R4 | 2026-09-01 | James Gill | Phase 4 now states where the file lands — written back over the live document in `07_Meeting Minutes/<series>/`; unpacked working dirs and validation artefacts move to a temp directory outside the project. Filing rule aligned to `bdm-house-style` § 13.12 (locked 1/9/26): the deliverable is built and saved directly in its regular project folder on the first save, following the sub-folder naming already in use on that project; no `00_ai_sandbox` staging; scratch and intermediates stay in a temp directory outside the project; saving is not issuing. |

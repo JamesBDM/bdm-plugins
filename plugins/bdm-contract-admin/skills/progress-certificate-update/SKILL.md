@@ -58,7 +58,7 @@ the claim is `PC 0NN (Month YYYY)`.
 Pull the **latest** `335-Progress_Certificate_R*.xlsm` from
 `…\BDM TEMPLATES\Working Copy\300 Project Management - Contract Delivery\` (highest revision
 wins; ignore `_Superseded`). **Cloud-only trap:** newly-revised templates often arrive as
-OneDrive placeholders that won't open from the sandbox (BadZipFile / wrong size). If that
+OneDrive placeholders that won't open from the session (BadZipFile / wrong size). If that
 happens, ask the user to drag the template into the chat — uploaded files read cleanly.
 
 ### 3. Gather the project specifics (read the project folder — do NOT hard-code)
@@ -113,44 +113,79 @@ superseding CSA carries the **restated** value, not a delta.
 If the project has no CAR, or the CAR is stale, **say so and stop**. Do not certify variations
 against an unverified register.
 
-### 5. Build (stage in the project's sandbox)
-All working/intermediate files go in the **active project's `00_ai_sandbox`** folder — every
-BDM project has one, and it's the standing location for in-progress work (operator-agnostic;
-do **not** stage in any personal "working" folder). Create the claim sub-folder there using
-the standing convention, `00_ai_sandbox\PC 0NN (Month YYYY)\`, and point the engine at it:
+### 5. Build — straight into the project's payment claim folder
+**The certificate is built and saved in its real home, first save. Do not stage it in
+`00_ai_sandbox`.** A progress certificate has a regular folder on every BDM project; the
+sandbox is for the Project Summary, sync/audit logs, ad-hoc work, and documents that have no
+regular home. A deliverable parked in the sandbox is a deliverable nobody can find.
+
+The claim folder lives under:
+```
+13_Contract Admin\01_Main Contract\03_Payment Claims\PC to Builder\<claim folder>\
+```
+**Use the claim-folder naming already in use on that project — do not impose a convention.**
+List `PC to Builder\` first and follow what is there. Projects run different schemes
+(`30_August EOM`, `24_May 2026`, `PC 024 (May 2026)`); creating a second folder for the same
+claim alongside the existing one splits the record. Where the claim folder already exists
+(the builder's claim documents usually land there first), **build into it** — never create a
+parallel one.
+
+> The old `13_Contract\04_Progress Claims\` path was **retired in May 2026** when the
+> `13_Contract` / `13_Contract Admin` split was collapsed. Filing to the old path puts the
+> certificate somewhere nobody looks.
+
+Point the engine at that folder:
 ```
 python scripts/build_certificate.py \
   --template <latest 335 .xlsm> --config <config.json> \
-  --outdir "<project>\00_ai_sandbox\PC 0NN (Month YYYY)" --rev "R4 2026-06"
+  --outdir "<project>\13_Contract Admin\01_Main Contract\03_Payment Claims\PC to Builder\<claim folder>" \
+  --rev "R4 2026-06"
 ```
 It applies the template guards (idempotent — see below), populates tabs 00–04, ports the
 cashflow macro to native formulas, saves a macro-free `.xlsm` (Excel recalculates on open),
 verifies the math, and exports a DRAFT PDF of **tabs 01–04 only**. It prints a JSON report;
-require `"PASS": true` (ties to the invoice, zero formula errors). Copy the source claim
-schedule, invoice and stat dec into the same sandbox sub-folder.
+require `"PASS": true` (ties to the invoice, zero formula errors).
+
+**Scratch and intermediate artefacts never touch the claim folder** — recalc copies, converted
+`.xlsx`, render previews, `.bak` files, LibreOffice lock and temp files all live in a temp
+directory outside the project. Only the deliverables and the source documents belong there.
+
+**Saving into the claim folder is not issuing.** The certificate stays a DRAFT held for the
+Senior QS or Director (see the authority boundary above) until they sign and send it. Never
+hold a finished certificate in the sandbox to keep it from going out — the DRAFT status and
+the signatory placeholder do that job.
 
 ### 6. Review the rendered PDF
 Open the PDF pages and eyeball them. Confirm the certificate summary equals the invoice, the
 trade subtotals tie, the cashflow chart plots actuals only for claimed months, and the
 contract-form references are right. Never report done before looking (BDM verify-before-done).
 
-### 7. File the final deliverables to the contract admin folder
-Once the certificate is finalised and ties out, copy the **final `.xlsm` + DRAFT PDF** (and the
-three source docs) to the project's contract-admin folder for progress claims — e.g.
-`13_Contract Admin\01_Main Contract\03_Payment Claims\PC to Builder\PC 0NN (Month YYYY)\`
-(use the project's actual numbering).
-
-> The old `13_Contract\04_Progress Claims\` path was **retired in May 2026** when the
-> `13_Contract` / `13_Contract Admin` split was collapsed. Filing to the old path puts the
-> certificate somewhere nobody looks. **Never overwrite existing source project files**; only add the new claim folder.
+### 7. Complete the claim folder and update the registers
+The certificate is already in place from step 5, so this step closes the record rather than
+moving anything:
+- Confirm the **source documents** sit alongside it in the claim folder — builder's claim
+  schedule, tax invoice, statutory declaration. They usually arrive there first; only copy in
+  what is missing.
+- **Never overwrite existing source project files.** Add; do not replace.
+- A revision of a certificate already in the folder is **written over the same file in place**
+  — same path, same name — so the claim folder never carries two live versions. Keep a
+  superseded copy in `ss\` only if the project already uses that convention.
+- Update the project's `00_ai_sandbox\Project_Summary_*.md` change log in the same pass —
+  certificate number, valuation date, certified position, net recommended, and every open flag.
 
 ### 8. Clean up the skill's own working files
-After the build, verification, PDF export and filing are done, delete the **scratch /
-intermediate artefacts the skill created** — temp build files, render-preview images, any
-recalc/static-ize intermediates — leaving only the final deliverables (the `.xlsm`, the DRAFT
-PDF and the source docs) in the sandbox sub-folder. Only ever delete files **the skill
-created**; never touch project documents or the source claim files. (The engine already
-removes its own temp dir automatically; this step sweeps anything created outside it.)
+After the build, verification, PDF export and register updates are done, delete the **scratch /
+intermediate artefacts the skill created** — temp build files, render-preview images, converted
+`.xlsx` recalc copies, `.bak` files, converter lock/temp files — leaving only the deliverables
+(the `.xlsm`, the DRAFT PDF, and on a certificate issued with one, the Payment Schedule) and the
+source docs in the claim folder. Only ever delete files **the skill created**; never touch
+project documents or the source claim files. (The engine already removes its own temp dir
+automatically; this step sweeps anything created outside it.)
+
+If the environment refuses the delete (`Operation not permitted` on the mounted folder), request
+delete permission for that folder; if that is unavailable or declined, **move** the artefacts to
+`00_ai_sandbox\_to_delete\` under a prefixed name and tell the user what was left there. Never
+leave scratch files sitting in the claim folder.
 
 ### 9. Present
 Present the final PDF and `.xlsm` and list every judgement call and flag.

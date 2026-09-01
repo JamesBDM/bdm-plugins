@@ -3,9 +3,9 @@ name: bdm-contract-admin-router
 description: Front door for BDM contract administration under AS4000 — variations (Form 343 determination, Form 342 contract sum adjustment, VO-XX), extensions of time (Form 344, EOT-XX, cl.34), cover letters transmitting either, and the per-project Contract Admin Register (CAR). Use when a contractor's variation or EOT claim needs to be acknowledged, assessed, determined, transmitted or logged, or when the user asks about the register, contract sum adjustments, delay damages, concurrent delay, or "the whole lot" for a claim. Trigger on VO-XX, EOT-XX, Form 342, Form 343, Form 344, "variation determination", "extension of time", "contract sum adjustment", "the register", "CAR", "log this claim", "weather days", "latent condition delay", "acknowledge the claim". Routes to the right sub-skill and walks the lifecycle in order. Not for tender-stage clarifications (use bdm-tender-clarification), progress certificates (use progress-certificate-update) or meeting minutes.
 metadata:
   type: router
-  revision: R3
+  revision: R4
   issued: 2026-05-06
-  revised: 2026-08-18
+  revised: 2026-09-01
   approved_by: James Gill
   maintained_by: BDM Standards
   parent_skill: bdm-house-style
@@ -14,6 +14,8 @@ metadata:
 # BDM Contract Admin — router
 
 Routes contract administration work to the correct sub-skill and sequences the multi-step lifecycles. **`bdm-house-style` is always in play** — load it alongside whatever you end up using, so nothing leaves BDM off-brand.
+
+> **Standing filing rule (`bdm-house-style` § 13.12, locked 1/9/26).** Every deliverable below is built and saved **directly in its regular project folder on the first save** — the claim folder, the VO folder, the EOT folder, the tender RFI folder. It is never staged in `00_ai_sandbox` and moved when "finished". Follow the sub-folder naming already in use on that project rather than a convention from a skill, and write into the folder that already exists where the contractor's own documents have landed. Saving there is **not** issuing — the document stays a DRAFT for the Superintendent to sign and send. `00_ai_sandbox` carries the `Project_Summary_*.md`, the `CAR_Sync_Log.md`, ad-hoc work, and documents with no regular home. Scratch and intermediates stay in a temp directory outside the project.
 
 ---
 
@@ -160,3 +162,4 @@ Ask the user. Never assume:
 | R1 | 2026-05-06 | James Gill | Initial issue as the `bdm-standards` master skill (router + house style combined). |
 | R2 | 2026-08-17 | James Gill | Split from `bdm-standards`; house style moved to `bdm-house-style`. Added § 2 fallback behaviour for sub-skills not yet packaged. |
 | R3 | 2026-08-18 | James Gill | All five sub-skills now packaged (§ 2 rewritten). Added § 3b-i EOT date preflight (business days, jurisdiction holiday set, Ekka carve-out, business-day landing check, buffer window). Added the CSA rules to § 3a — restated value not a delta, no internal commentary, builder's submission attached. CAR is xlsx only; removed "print the Cover sheet to PDF" from § 3c. Form numbers removed from the router table pending the form-number decision. |
+| R4 | 2026-09-01 | James Gill | Added the standing filing rule at the head of the router so it applies to every route. Filing rule aligned to `bdm-house-style` § 13.12 (locked 1/9/26): the deliverable is built and saved directly in its regular project folder on the first save, following the sub-folder naming already in use on that project; no `00_ai_sandbox` staging; scratch and intermediates stay in a temp directory outside the project; saving is not issuing. |

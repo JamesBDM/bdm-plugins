@@ -4,7 +4,7 @@ description: Draft NEW meeting minutes for SITE MEETINGS and AD-HOC / WORKSHOP /
 type: process
 template_revision: R3
 issued: 2026-05-20
-revised: 2026-08-18
+revised: 2026-09-01
 approved_by: James Gill
 maintained_by: BDM Standards
 parent_skill: bdm-house-style
@@ -79,6 +79,10 @@ If the project / series is obvious, just proceed.
   - Design Coord → `07_Meeting Minutes/Design Coordination/`
   - Ad-hoc — pick or create a sensibly named subfolder.
 - If the subfolder doesn't exist yet, create it and tell the user.
+- **Build the minutes directly in that meeting subfolder** — not staged in `00_ai_sandbox` and moved
+  later (`bdm-house-style` § 13.12). The sandbox's role here is the `Project_Summary_*.md` read and
+  write-back only. Scratch and intermediates go to a temp directory outside the project. Saving into
+  the meeting folder is not issuing — the minutes stay a DRAFT until the PM sends them.
 
 ### Step 2 — Determine the meeting number
 
@@ -263,3 +267,4 @@ Record **decisions and actions**, not opinions or back-and-forth discussion.
 |---|---|---|---|
 | R2 | 2026-05-20 | James Gill | Initial packaged issue. |
 | R3 | 2026-08-18 | James Gill | Recovered the truncated § 6 (the file ended mid-sentence and everything after it was lost). `PROJECT.md` replaced with `Project_Summary_*.md` throughout, including as a write target. Missing-sandbox severity aligned to flag-don't-block. Step 7 no longer calls a script in another user's folder — `bdm-pdf-export` is self-contained and Calibri-based. Added the drop-closed-items rule, the spacer-bullet trap, the untracked header/footer convention and the attendee sourcing priority. |
+| R4 | 2026-09-01 | James Gill | Minutes are built directly in the `07_Meeting Minutes/<series>/` subfolder; the sandbox's role is narrowed to the `Project_Summary_*.md` read and write-back. Filing rule aligned to `bdm-house-style` § 13.12 (locked 1/9/26): the deliverable is built and saved directly in its regular project folder on the first save, following the sub-folder naming already in use on that project; no `00_ai_sandbox` staging; scratch and intermediates stay in a temp directory outside the project; saving is not issuing. |

@@ -11,7 +11,8 @@ Design split: Claude reads the project folder + claim docs and assembles the
 config (judgement); this script does the deterministic build + verification.
 
 Staging is operator-agnostic: pass --outdir pointing at the active project's
-00_ai_sandbox\\PC 0NN (Month YYYY) folder. The script writes ONLY the final
+project's payment claim folder (13_Contract Admin\\...\\PC to Builder\\<claim folder>).
+The script writes ONLY the final
 .xlsm and .pdf there; all of its own intermediates live in a private temp dir
 that is always removed on exit.
 
@@ -338,7 +339,9 @@ def main():
     ap.add_argument('--template', required=True)
     ap.add_argument('--config', required=True)
     ap.add_argument('--outdir', required=True,
-                    help="staging dir — the project's 00_ai_sandbox\\PC 0NN (Month YYYY)")
+                    help="the project's payment claim folder: 13_Contract Admin\\01_Main Contract\\"
+                         "03_Payment Claims\\PC to Builder\\<claim folder> — use the naming already "
+                         "in use on that project. NOT 00_ai_sandbox.")
     ap.add_argument('--rev', default='R4 2026-06', help='revision label to stamp')
     a = ap.parse_args()
 
