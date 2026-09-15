@@ -253,6 +253,8 @@ These are the standing BDM rules every workflow skill assumes. They live here so
 
 **13.6 Draft, don't issue.** Skills produce DRAFTS held for a human to review and issue. Nothing goes to a contractor, client or lender without the responsible person sending it. Where a document is a tracked-changes draft for review, leave track changes on deliberately and say so.
 
+**Holding is a process, not a label.** Do not write "DRAFT" on the document itself — no DRAFT watermark, cover banner, "DRAFT — NOT FOR ISSUE" line, header/footer stamp, DRAFT revision or status, or `_DRAFT` filename suffix. Users were having to delete these by hand before sending (James Gill, 15 Sep 2026). If a template carries a DRAFT line, strip it when populating. Register and log *status* values (e.g. a CAR `DRAFT` row) are unaffected.
+
 **13.7 File the deliverable in the same pass.** Producing a document and filing it are one job, not two. In the same pass: deliver the file to the user **and** write it to its project folder. A file that exists only in the session is not a deliverable.
 
 **13.8 Link every file.** Every file created, edited or referenced is cited with a `computer://` link using the **Windows path**, not the mount path.

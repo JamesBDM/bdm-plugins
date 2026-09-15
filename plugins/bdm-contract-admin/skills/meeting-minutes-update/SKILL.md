@@ -273,7 +273,7 @@ development and are NOT fully covered by the docx skill -- keep them here.
 
 **Fresh (first-meeting) build:** there are no prior items to track, so a clean issue
 is appropriate -- no tracked changes required. Populate the current Form 230 template,
-mark the document DRAFT FOR REVIEW, and follow the BDM filename convention. The XML
+do not mark it DRAFT, and follow the BDM filename convention. The XML
 patterns below apply when you are rolling an existing set forward.
 
 ### The unpack -> edit XML -> repack workflow
@@ -558,7 +558,8 @@ Before delivering, verify:
 - Items confirmed as closed are properly marked
 - No stale references to the previous meeting's date remain
 - For updates: Track Changes are NOT accepted -- leave them visible for review
-- Document is visibly marked DRAFT until the user signs it off (BDM drafting rule)
+- Document is NOT marked DRAFT (no watermark, banner, header/footer text or `_DRAFT` filename) —
+  it is held for the user to sign off and send (`bdm-house-style` § 13.6)
 - **No orphaned spacer bullets.** BDM templates carry an empty spacer bullet whose numbering
   properties are `numPr` with `numId=0`. **Never clone that row to make a new bullet** — the
   clone inherits `numId=0` and renders as an un-numbered, un-bulleted orphan line that looks
@@ -599,7 +600,7 @@ meeting distribution list (the attendees, plus any standing recipients on the pr
 - **Body**: one or two lines noting the draft minutes are attached for review, a
   request that recipients confirm any corrections by a stated date, and a reminder
   that actions are due as listed against each item.
-- **Attachments**: the DRAFT minutes (Word with tracked changes, and/or the PDF
+- **Attachments**: the minutes (Word with tracked changes, and/or the PDF
   export via the bdm-pdf-export skill).
 - **Do NOT send the email** -- leave it as a draft for the user to review and send,
   consistent with the BDM rule that client- and contractor-facing communications are

@@ -6,7 +6,7 @@ certifying instrument as Superintendent under AS4000 cl.37.2. Companion to
 
 ## What you get
 - A populated, **macro-free** `.xlsm` (Excel recalculates on open).
-- A **DRAFT PDF of tabs 01–04 only** (Cover, Certificate, Trade Breakdown, Cashflow).
+- A **PDF of tabs 01–04 only** (Cover, Certificate, Trade Breakdown, Cashflow).
 - A verification that the net-this-claim incl GST equals the builder's tax invoice.
 
 ## How it works
@@ -28,7 +28,7 @@ Requires `python3`, `openpyxl`, and LibreOffice (`soffice`) on PATH. Output JSON
 - **Working / intermediate:** the active project's `00_ai_sandbox\PC 0NN (Month YYYY)\`. Every
   BDM project has a `00_ai_sandbox`; it's the standing location for in-progress work, so the
   skill never depends on any one person's personal folder.
-- **Final deliverables:** the `.xlsm` + DRAFT PDF (and the source claim schedule, invoice,
+- **Final deliverables:** the `.xlsm` + PDF (and the source claim schedule, invoice,
   stat dec) are filed to the project's contract-admin folder, e.g.
   `13_Contract\04_Progress Claims\PC to Builder\PC 0NN (Month YYYY)\`.
 - Source project folders are never overwritten — the skill only adds the new claim folder.
@@ -58,7 +58,7 @@ to a 5% cap).
 
 ## Scope / limits (v1)
 - Head-contract progress certificates.
-- Certificate is **DRAFT** for Senior QS / Director sign-off; never issued by the skill.
+- Certificate is held (unmarked) for Senior QS / Director sign-off; never issued by the skill.
 - Cashflow month rows span a fixed window; extend for longer programmes.
 
 ## Pilot

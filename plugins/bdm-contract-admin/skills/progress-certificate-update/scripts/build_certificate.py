@@ -4,7 +4,7 @@ build_certificate.py — BDM Progress Certificate (Form 335) builder.
 
 Takes the latest 335 template + a project/claim config (JSON) and produces:
   - a populated, macro-free .xlsm (Excel recalculates on open)
-  - a DRAFT PDF of tabs 01-04 only (Cover, Certificate, Trade Breakdown, Cashflow)
+  - a PDF of tabs 01-04 only (Cover, Certificate, Trade Breakdown, Cashflow)
 and verifies the net-this-claim incl GST equals the builder's tax invoice.
 
 Design split: Claude reads the project folder + claim docs and assembles the
@@ -184,8 +184,8 @@ def populate(wb, cfg):
         'C8': pd['name'], 'C9': pd['address'], 'C10': pd['principal'],
         'C11': pd['contractor'], 'C12': pd.get('client', pd['principal']),
         'C13': pd.get('development_type', ''), 'C14': pd.get('stage', 'Construction'),
-        'C15': cfg['contract_sum'], 'C19': cfg.get('revision', 'DRAFT'),
-        'C20': 'Draft', 'C21': cfg.get('signatory', '[For signature — Senior QS / Director]'),
+        'C15': cfg['contract_sum'], 'C19': cfg.get('revision', ''),
+        'C20': cfg.get('status', ''), 'C21': cfg.get('signatory', '[For signature — Senior QS / Director]'),
         'C22': cfg.get('reviewer', '[Reviewer]'),
         'C25': pd.get('builder_contact', ''), 'C26': pd.get('builder_address', ''),
         'C27': pd.get('builder_email', ''),

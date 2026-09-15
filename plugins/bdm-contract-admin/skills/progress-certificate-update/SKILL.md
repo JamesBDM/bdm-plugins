@@ -20,7 +20,7 @@ description: >-
 When a builder lodges a progress claim, BDM (as Superintendent) must issue a Progress
 Certificate under AS4000 cl.37.2 stating the amount BDM recommends for payment. This skill
 rolls the previous certificate forward onto the new claim, populates the BDM Form 335
-template, verifies the numbers tie to the builder's tax invoice, and produces a DRAFT
+template, verifies the numbers tie to the builder's tax invoice, and produces the
 certificate (Excel + PDF) for the Senior QS or Director to review, sign and issue.
 
 You (Claude) do the judgement — reading the project folder and the claim documents, mapping
@@ -31,7 +31,9 @@ that division: think and confirm, then let the script build.
 ## Authority boundary (read first)
 
 BDM **drafts and recommends**; the Senior QS or Director **certifies and issues**. So:
-- Every output stays **DRAFT**; the signatory line is left as a placeholder.
+- Every output is held for sign-off (not issued); the signatory line is left as a placeholder.
+  Do **not** write "DRAFT" on the certificate — no DRAFT revision, status, header, footer or
+  `_DRAFT` filename suffix (`bdm-house-style` § 13.6).
 - Default the certified amounts to the **claimed** amounts, then flag any line where you
   believe the Superintendent should certify less — but never reduce a claim yourself without
   being asked. The reviewer adjusts.
@@ -125,7 +127,7 @@ python scripts/build_certificate.py \
 ```
 It applies the template guards (idempotent — see below), populates tabs 00–04, ports the
 cashflow macro to native formulas, saves a macro-free `.xlsm` (Excel recalculates on open),
-verifies the math, and exports a DRAFT PDF of **tabs 01–04 only**. It prints a JSON report;
+verifies the math, and exports a PDF of **tabs 01–04 only**. It prints a JSON report;
 require `"PASS": true` (ties to the invoice, zero formula errors). Copy the source claim
 schedule, invoice and stat dec into the same sandbox sub-folder.
 
@@ -135,7 +137,7 @@ trade subtotals tie, the cashflow chart plots actuals only for claimed months, a
 contract-form references are right. Never report done before looking (BDM verify-before-done).
 
 ### 7. File the final deliverables to the contract admin folder
-Once the certificate is finalised and ties out, copy the **final `.xlsm` + DRAFT PDF** (and the
+Once the certificate is finalised and ties out, copy the **final `.xlsm` + PDF** (and the
 three source docs) to the project's contract-admin folder for progress claims — e.g.
 `13_Contract Admin\01_Main Contract\03_Payment Claims\PC to Builder\PC 0NN (Month YYYY)\`
 (use the project's actual numbering).
@@ -147,7 +149,7 @@ three source docs) to the project's contract-admin folder for progress claims �
 ### 8. Clean up the skill's own working files
 After the build, verification, PDF export and filing are done, delete the **scratch /
 intermediate artefacts the skill created** — temp build files, render-preview images, any
-recalc/static-ize intermediates — leaving only the final deliverables (the `.xlsm`, the DRAFT
+recalc/static-ize intermediates — leaving only the final deliverables (the `.xlsm`, the
 PDF and the source docs) in the sandbox sub-folder. Only ever delete files **the skill
 created**; never touch project documents or the source claim files. (The engine already
 removes its own temp dir automatically; this step sweeps anything created outside it.)
@@ -206,7 +208,7 @@ window, extend the month rows (a template enhancement) and flag it.
 Retention basis used; **contract form / edition confirmed against the executed contract**
 (mandatory — the script aborts without it); **every CAR mismatch, with both figures**; the
 builder's margin basis; any certified-vs-claimed delta; any source that was OneDrive cloud-only and couldn't be read; and
-the DRAFT/signatory status. Scope of v1 is **head-contract** progress certificates.
+the held-for-signature status. Scope of v1 is **head-contract** progress certificates.
 
 ## Reference files
 - `references/config_schema.md` — the JSON config schema with a worked example.

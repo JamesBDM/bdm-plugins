@@ -7,7 +7,7 @@ documents, then passes it to `scripts/build_certificate.py --config`.
 
 | Field | Type | Notes |
 |---|---|---|
-| `output_basename` | string | Filename stem (no extension). Carry `_DRAFT_vX.Y`. |
+| `output_basename` | string | Filename stem (no extension). Carry `_vX.Y` — never `_DRAFT`. |
 | `project.name` | string | Appears as the certificate "Re:" / project name. |
 | `project.address` | string | Full site address. |
 | `project.principal` | string | Principal / superintendent's client. |
@@ -24,7 +24,7 @@ documents, then passes it to `scripts/build_certificate.py --config`.
 | `previous_net` | number | Prior certificate's NET recommendation ex GST (positive; script negates). |
 | `contract_form` | string | **MANDATORY - no default.** e.g. "Amended AS4000-1997". Read it off the executed contract. Drives the cl.37.2 wording in the cover letter body, footer strapline, Annexure A footnote and covering paragraph. The script aborts if absent; a silent `AS4000-2024` default put the wrong edition on two issued certificates. |
 | `builders_margin` | object or number | `{"rate": 0.06}` to recompute the margin on this claim's value, or an absolute amount. If omitted, `03!I56` keeps the PRIOR certificate's margin and the build warns. |
-| `revision` | string | Shown in 00 Project Details (e.g. "R4 DRAFT"). |
+| `revision` | string | Shown in 00 Project Details (e.g. "R4"). Never "DRAFT". |
 | `retention.rate` | number | Fraction, e.g. 0.10. |
 | `retention.cap_pct` | number | Optional. Fraction of contract sum, e.g. 0.05 → "10% to a 5% cap". Omit for flat rate. |
 | `invoice_total` | number | Builder invoice total incl GST. Build PASSES only if the certificate ties to this. |
