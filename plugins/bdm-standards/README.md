@@ -1,4 +1,4 @@
-# BDM Standards — v2.0.0
+# BDM Standards — v2.2.0
 
 The foundation plugin. Install this first — the other BDM plugins assume it.
 
@@ -7,6 +7,10 @@ The foundation plugin. Install this first — the other BDM plugins assume it.
 - **`datum-markup`** — writes editable markups, measurements and priced BOQ takeoffs directly into a PDF for Datum.
 
 Templates live in SharePoint, not here. See `bdm-house-style` § 8.
+
+## What changed in 2.2.0
+
+- **New skill `bdm-project-sandbox-setup`.** Gets projects without a sandbox or summary onto the CLAUDE.md §13 standard so every other skill has a live project state to read. Bundles two read-only PowerShell helpers: `scan_project.ps1` (sandbox status sweep and per-project inventory) and `read_msg.ps1` (reads saved Outlook `.msg` emails).
 
 ## What changed in 2.0.0
 

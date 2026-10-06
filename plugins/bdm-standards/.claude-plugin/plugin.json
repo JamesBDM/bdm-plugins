@@ -1,6 +1,6 @@
 {
   "name": "bdm-standards",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "BDM house style and brand rules (Brand Standard R3), document QA, self-contained PDF export and the Datum markup tooling every BDM deliverable relies on.",
   "author": {
     "name": "Bentley Development Management"
