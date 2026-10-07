@@ -1,4 +1,4 @@
-# BDM Standards — v2.4.0
+# BDM Standards — v2.4.1
 
 The foundation plugin. Install this first — the other BDM plugins assume it.
 

@@ -10,7 +10,7 @@
       "name": "bdm-standards",
       "source": "./plugins/bdm-standards",
       "description": "BDM house style and brand rules (Brand Standard R3 — Calibri), document QA, self-contained PDF export, Datum markup and project sandbox setup. Install this one first; everything else assumes it.",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "author": {
         "name": "Bentley Development Management"
       }
