@@ -7,12 +7,18 @@ description: >
   marking up a drawing or document for Datum, redlining a PDF, adding review
   clouds/stamps/notes, measuring a drawing, doing a quantity takeoff,
   producing a bill of quantities (BOQ) / estimate on a PDF, or laying out a
-  report, summary sheet or presentation page — even if the user only says
+  report, summary sheet or presentation page, or placing symbols on a plan —
+  including a construction management plan / site establishment / traffic
+  management layout (tower / mobile / Franna cranes and concrete pumps at
+  true size with reach charts and weathervane zones, delivery and concrete
+  trucks with turning circles, builder's hoists, scissor and boom lift EWPs, scaffold runs and true-size site sheds / containers, bins, hoarding, traffic
+  control) — even if the user only says
   "mark this up", "cloud the changes", "measure this plan", "do a takeoff",
-  "price this drawing", or "make this look presentable". The output is a
+  "price this drawing", "do a CMP layout", or "make this look presentable". The output is a
   normal PDF that opens in Datum with every markup fully live and editable,
-  and every measured quantity computed by Datum itself. No access to the
-  Datum app is needed to produce the file.
+  and every measured quantity computed by Datum itself, then baked by
+  Datum's own Save so the markups also show in Adobe, Chrome and Bluebeam.
+  No access to the Datum app UI is needed to produce the file.
 ---
 
 # Datum Markup — write editable markups straight into a PDF
@@ -53,11 +59,18 @@ before using this skill's presentation half on an unknown install.
 5. **Verify, then embed.** Call `p.verify(pages=page_sizes(src))` — it raises
    on off-page coordinates, unknown types, orphaned takeoff links and missing
    calibration. Then `embed(source_pdf, p, output_pdf)`.
+6. **Bake, so the markups show outside Datum.** `embed()` only writes the
+   editable project — Adobe, Chrome and Bluebeam show the clean drawing.
+   `ok, msg = bake(output_pdf)` opens the file in the real Datum app
+   (headless Chromium) and runs Datum's own Save, exactly as if someone had
+   pressed Ctrl+S: markups painted onto every page for every viewer, and the
+   file still reopens fully editable in Datum. Do this every time the file is
+   going to anyone. See **Baking** below for setup and what to do if it fails.
 
 ## Quick start — review markup
 
 ```python
-from datum_markup import DatumProject, embed, page_sizes
+from datum_markup import DatumProject, embed, bake, page_sizes
 
 sizes = page_sizes("source.pdf")
 w, h = sizes[0]
@@ -67,11 +80,13 @@ p.cloud(page=0, x1=100, y1=200, x2=400, y2=300)
 p.callout(0, anchor=(250, 250), text_pos=(430, 210),
           text="Confirm setback with surveyor", preset="callout-note")
 p.stamp(0, 700, 80, "FOR REVIEW")
-p.symbol(0, 60, 60, 100, 100, "g-north")
+p.symbol_at(0, 80, 80, "g-north")          # true proportions, default size
 p.rectangle(0, 80, 500, 560, 700, dashed=True, subject="Signatures")
 
 p.verify(pages=sizes)
 embed("source.pdf", p, "Site Plan - MARKED UP.pdf")
+ok, msg = bake("Site Plan - MARKED UP.pdf")   # visible in Adobe too
+print(msg)
 ```
 
 ## Quick start — presentation page
@@ -141,8 +156,49 @@ p.legend(0, x=700, y=520, mode="summary")             # live BOQ table on the sh
 ## What you can write
 
 **Review:** cloud, text, rectangle, ellipse, line, polygon, polyline, arrow,
-highlight, callout, stamp, tick, symbol (104 construction symbols), image,
-cutcontent (white-out), dimension, pen, signature.
+highlight, callout, stamp, tick, symbol, image, cutcontent (white-out),
+dimension, pen, signature.
+
+**Symbols:** 311 in 19 categories — drafting markers, doors/windows/stairs,
+furniture, kitchen, sanitary, landscape, electrical, mechanical, fire, civil,
+and a full **construction management plan** set (schematic cranes, pumps,
+hoists, site sheds, bins, hoarding and fencing, erosion and sediment control,
+traffic control devices and signs). Read `references/symbols.md` for the ids
+before placing any, and place with `symbol_at()` so each lands at its true
+proportions.
+
+**True-size plant and site establishment (v3.37–v3.42):** concrete boom pumps (`cp-*`), trucks and
+vehicles (`tv-*` — agitators, rigid trucks, tippers, semi, truck & dog,
+B-double) and cranes (`cr-*` — flat-top, hammerhead, luffing and
+self-erecting tower cranes, Frannas, all-terrain mobiles) and access
+(`ac-*` — builder's hoists, scissor lifts, vertical mast, knuckle and
+telescopic boom lifts, spider lift), scaffold (`sf-*` — runs with editable
+bays, stair tower, loading bay, mobile towers) and site sheds (`ss-*` —
+portable offices, crib, toilets, change rooms, portaloos, containers) carry a real
+footprint. Calibrate the page, then place with `symbol_true_size()` so the
+machine occupies its real size on the drawing, and add the overlays a CMP
+needs:
+
+```python
+p.calibrate_page(0, 200)
+p.symbol_true_size(0, 300, 260, "cr-tc-luff-45", rotation=-30, jib=40,
+                   show_vane=True,                        # weathervane zone
+                   rings=[(15, "18 t"), (25, "11 t"), (40, "5.6 t")])
+p.symbol_true_size(0, 520, 300, "cr-mc-100", show_reach=True, show_vane=True)
+p.symbol_true_size(0, 420, 420, "cp-putz-36", show_reach=True)
+p.symbol_true_size(0, 470, 480, "tv-agi-8", rotation=90, show_turn=True)
+p.symbol_true_size(0, 200, 400, "ac-hoist-twin")                # base enclosure + cages
+p.symbol_true_size(0, 240, 470, "ac-boom-t60", show_reach=True) # outreach ring
+p.symbol_true_size(0, 400, 120, "sf-run-1200", bays=12, bay_length=2.4)  # 28.8 m run
+p.symbol_true_size(0, 650, 520, "ss-office-12")                 # 12 × 3.3 m portable
+```
+
+At rotation 0 the cab / boom / jib points to +x (rotation is degrees
+clockwise); a tower crane's box is its base and the jib is drawn out along
++x, so rotate it to slew. Default crane and pump rings are typical for the
+class, not a load chart — pass the actual crane's radii and capacities in
+`rings` when the job has them. The full option table is in
+`references/symbols.md`.
 
 **Data + layout:** table (title bar, header row, per-cell fill, colour-swatch
 columns), legend (auto-generated BOQ key).
@@ -152,7 +208,8 @@ timeline, bracket, progress, chart (bar / line / donut / pie).
 
 **Measured:** measure, area, count — plus `boq_item` / `boq_manual`.
 
-Full property lists are in `references/annotation-types.md`.
+Full property lists are in `references/annotation-types.md`; every symbol id
+and its default size is in `references/symbols.md`.
 
 ## Making it look designed, not just populated
 
@@ -206,13 +263,49 @@ Then, after embedding:
 - Hand-compute one expected quantity (length ÷ pixelsPerMm ÷ 1000 = metres)
   and state it to the user so they can spot-check the BOQ in Datum.
 
+## Baking
+
+`bake()` drives `scripts/datum-bake.js`, which loads Datum, opens the PDF,
+calls Datum's `saveProject()`, and checks the result with Datum's own reader
+(markups painted in, clean original embedded, same markup count) before it
+replaces the file. Same renderer as the app, so nothing drifts when Datum
+changes.
+
+Setup, once per machine or sandbox (Node 18+):
+
+```bash
+npm install playwright
+npx playwright install chromium   # skip if Chrome or Edge is installed
+```
+
+Run `npm install` in the `scripts/` folder or the working directory —
+either is found. CLI form: `node scripts/datum-bake.js file.pdf [-o out.pdf]`.
+
+- **The app** comes from the live site by default
+  (`https://jamesbdm.github.io/bdm-pdf-tool/BDM-PDF-Markup-Tool.html`), so it
+  needs internet. Offline, pass `app="path/to/BDM-PDF-Markup-Tool.html"` (or
+  set `$DATUM_APP`) and `npm install pdf-lib@1.17.1 pdfjs-dist@3.11.174` so
+  the libraries are served locally too.
+- **Browser**, first that works: `$CHROMIUM_PATH`, Playwright's Chromium,
+  installed Chrome, installed Edge.
+- **Already baked** (it was saved from Datum) → reports so and changes
+  nothing. Re-baking is always safe; Datum renders from the clean copy.
+- **If it fails** (no node, no browser, no internet, or a set too large for
+  the browser to hold twice — roughly 200MB+), the file is left exactly as
+  `embed()` wrote it and `msg` says why. Don't hand the file over as if it
+  were finished: tell the reader the markups are only visible in Datum until
+  they open it there and press Save.
+- Verify a bake independently if you can: render a page with PyMuPDF or
+  pdftoppm and look — the markups should be on the page.
+
 ## Things that bite
 
 - **Top-left origin.** Repeated because it is the failure mode: flip y when
   converting from PDF-native coordinates.
-- Markups are visible **only in Datum** until the reader re-saves there
-  (`BDMBakedOverlay = '0'`); Acrobat and browsers show the clean document.
-  Say this when delivering, so nobody thinks the file is blank.
+- Straight out of `embed()`, markups are visible **only in Datum**
+  (`BDMBakedOverlay = '0'`); Acrobat, Bluebeam and browsers show the clean
+  document. `bake()` fixes that. If baking wasn't possible, say so when
+  delivering, so nobody thinks the file is blank.
 - `page` is 0-based. `pageCalibrations` keys are STRINGS (`"0"`, `"1"`).
 - Stamps and badges anchor at their CENTRE; text and tables anchor TOP-LEFT.
 - On text the fill is `boxFill`; on shapes it is `fillColor`. Don't cross
@@ -233,4 +326,6 @@ Name the output `<original name> - MARKED UP.pdf` (or the user's requested
 name), state what was placed where, state the one hand-computed check
 quantity if anything was measured, and remind the reader: open it in Datum —
 markups are editable; the BOQ lives under the **Workbook** button in the top
-bar; re-saving from Datum bakes markups in for other PDF viewers.
+bar. State whether the file was baked: if yes, it is ready to send and shows
+in Adobe/Chrome/Bluebeam; if `bake()` failed, say the markups only show in
+Datum until someone opens it there and presses Save.

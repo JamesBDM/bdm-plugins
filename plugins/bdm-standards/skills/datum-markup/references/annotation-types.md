@@ -87,7 +87,7 @@ Widely supported optional properties:
 | `fillColor2` + `gradientAngle` | filled shapes, panels | Two-stop linear gradient. Angle in degrees clockwise from left→right; default 90 = top→bottom. (v3.22) |
 | `shadow` + `shadowColor` / `shadowBlur` / `shadowOffsetX` / `shadowOffsetY` | shapes, text, callout, panels | `shadow` must be `true` for the rest to apply. (v3.22) |
 | `strokeSide` | rectangle, panel types | `"all"` (default) or any of `t`/`r`/`b`/`l` joined, e.g. `"l"` for a left accent bar. (v3.22) |
-| `hatch` | rectangle, ellipse, polygon, area | `none` \| `diagonal` \| `diagonal-rev` \| `diagonal-cross` \| `cross` \| `horizontal` \| `vertical` \| `dots` \| `solid` |
+| `hatch` | rectangle, ellipse, polygon, area | Lines: `none` \| `diagonal` \| `diagonal-rev` \| `diagonal-cross` \| `cross` \| `horizontal` \| `vertical` \| `dots` \| `solid`. Materials (v3.31): `concrete` \| `brick` \| `blockwork` \| `steel` \| `timber` \| `insulation` \| `earth` \| `gravel` \| `sand` \| `stone` \| `grass`. Patterns (v3.31): `wave` \| `zigzag` \| `herringbone` \| `hex` \| `checker`. Materials follow the CAD conventions (brick = running bond, steel = ANSI32 paired diagonals, earth = acad EARTH, concrete = AR-CONC aggregate scatter); all honour the spacing/angle/opacity options below. |
 | `hatchSpacing` / `hatchAngle` / `hatchWeight` / `hatchOpacity` | as above | Gap in points (default 6), degrees, line width, 0–100 (default 30). (v3.22) |
 | `rotation` | rectangle, ellipse, highlight, image, signature, stamp, text, symbol, all panel types | Degrees. Points stay unrotated. |
 | `groupId` | any | Members move, delete and re-order as one. (v3.22) |
@@ -152,12 +152,31 @@ clamp 0.2–12), `opacity` (Datum's own stamps use 85).
 `pen`: `points` = freehand run.
 `signature`: two-corner box; keeps its aspect ratio on resize.
 
-### symbol — the construction library
-`points` = [cornerA, cornerB]. `symbolId` picks from 104 symbols in 8
-categories (General/Drafting, Architectural, Plumbing, Electrical,
-Mechanical, Fire, Furniture, Civil). Useful General ids: `g-north`,
-`g-section`, `g-detail`, `g-elevation`, `g-level`, `g-grid`, `g-rev`,
-`g-keynote`.
+### symbol — the symbol library
+`points` = [cornerA, cornerB]. `symbolId` picks from 311 symbols in 19
+categories: General/Drafting, Architectural, Furniture (Bedroom; Living &
+Dining), Kitchen & Laundry, Sanitary/Plumbing, Landscape & External,
+Electrical, Mechanical/HVAC, Fire, Civil/Siteworks, and three Construction
+categories for construction management plans — Plant & Lifting (cranes,
+pumps, hoists), Site Establishment (sheds, bins, fencing, ESC) and Traffic
+Control. **Every id, with its default size, is in `references/symbols.md`.**
+
+True-size categories — Concrete Pumps (`cp-*`), Trucks & Vehicles (`tv-*`),
+Cranes (`cr-*`), Hoists & EWPs (`ac-*`) and Scaffold & Site Sheds (`sf-*`,
+`ss-*`) — are boxed at their real footprint (`SYMBOL_REAL`, mm ×
+the page's `pixelsPerMm`); use `p.symbol_true_size()`. Extra fields Datum
+reads on them: `showReach` (bool) and `rings` (`[{r: metres, t: label}]`,
+else the machine's defaults) for pumps, cranes and boom / spider lifts; `jib`, `cj`, `parked`
+(metres) and `showVane` (weathervane zone) for tower cranes; `tail` and
+`showVane` (tail-swing circle) for mobile cranes; `showTurn`, `turnRight`
+for trucks; `bays` (int), `bayL`, `sfW` (metres) for scaffold runs, whose box
+must be bays × bayL by sfW at the page scale.
+
+The box's proportions must match the symbol's (many are not square — a site
+office is 60 × 27.6), or the artwork is drawn stretched. Use
+`p.symbol_at(page, cx, cy, id, width=…)` to get this right automatically.
+Optional `rotation` in degrees; `color` and `thickness` (weight multiplier,
+default 2) as for other markups.
 
 ### image
 `points` = [cornerA, cornerB], plus the image data Datum stores on the
