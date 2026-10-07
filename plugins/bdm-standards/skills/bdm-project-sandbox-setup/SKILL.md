@@ -1,15 +1,15 @@
 ---
 name: bdm-project-sandbox-setup
-description: Set up a BDM project's AI sandbox — create the `00_ai_sandbox` folder and backfill a full `Project_Summary_<Project>.md` (all 17 sections of the CLAUDE.md §13 standard) from what is actually in the project folder, its saved emails and ProjectHub. Use when a project has no sandbox or no project summary, when another skill flags "sandbox missing or stale", or when the user says "set up the sandbox", "create the project summary", "backfill the summary", "onboard this project", "get my projects AI-ready", "which projects don't have a sandbox", or "do all my projects". Works on one project or sweeps every live project folder and sets up the ones that are missing. Read-only on project documents — the only writes are the sandbox folder and the summary file. Never invents a date, cost, reference or contact; gaps become "Confirm …" actions. Not for updating a summary that already exists (other skills keep it live on every touch).
+description: Set up a BDM project's AI sandbox — create the `00_ai_sandbox` folder, backfill a full `Project_Summary_<Project>.md` (all 17 sections of the CLAUDE.md §13 standard) from what is actually in the project folder, its saved emails and ProjectHub, and build the `AI_Context\` folder (the project's documents except drawings, converted to markdown, scanned PDFs OCR'd, each with a source/revision header). Use when a project has no sandbox, no project summary or no AI_Context, when another skill flags "sandbox missing or stale", or when the user says "set up the sandbox", "create the project summary", "backfill the summary", "onboard this project", "build the AI context", "convert the project documents", "OCR the scans", "refresh AI_Context", "is the AI context stale", "run the monthly audit", "get my projects AI-ready", "which projects don't have a sandbox", or "do all my projects". Works on one project or sweeps every live project folder. Read-only on project documents — the only writes are the sandbox folder, the summary file and AI_Context. Never invents a date, cost, reference or contact; gaps become "Confirm …" actions. Not for updating a summary that already exists (other skills keep it live on every touch).
 metadata:
   type: process
-  revision: R1
-  issued: 2026-10-06
+  revision: R2
+  issued: 2026-10-07
   approved_by: James Gill
   maintained_by: BDM Standards
   parent_skill: bdm-house-style
   related_skills: bdm-house-style, bdm-contract-admin-register
-  implements: CLAUDE.md §8 (sandbox first) and §13 (project summary standard, incl. §17 conventions)
+  implements: CLAUDE.md §8 (sandbox first; AI_Context rule, R5) and §13 (project summary standard incl. §16 AI_Context pointer and §17 conventions; monthly audit)
 ---
 
 # BDM Project Sandbox Setup
@@ -18,16 +18,21 @@ Every BDM skill starts by reading `<project>\00_ai_sandbox\Project_Summary_*.md`
 
 This is the **only** skill that creates a project summary. CLAUDE.md §8 says skills must never create a stub — this skill doesn't. It writes all 17 sections from a real read of the folder, and marks what it could not find.
 
+Since R2 it also builds `00_ai_sandbox\AI_Context\` (CLAUDE.md §8, R5): the project's static documents, except drawings, converted once to markdown so later skills quote what a document actually says instead of re-reading a PDF under pressure. The summary holds the current position; AI_Context holds the source text.
+
 ---
 
 ## 1. Rules that don't bend
 
-1. **Read-only on project documents.** The only things this skill writes are the `00_ai_sandbox` folder (if missing) and the `Project_Summary_*.md` inside it. Never move, rename, copy or delete a project file — flag misfiled things in §16 instead.
+1. **Read-only on project documents.** The only things this skill writes are the `00_ai_sandbox` folder (if missing), the `Project_Summary_*.md` inside it, and `00_ai_sandbox\AI_Context\`. Never move, rename, copy or delete a project file — flag misfiled things in §16 instead. The AI_Context scripts only ever delete their own generated `.md` copies when the source is gone or out of scope.
 2. **No invented facts.** Every date, dollar figure, reference number, firm and person comes from a document or email you opened. Put the source path on the line. Not found → `TBC — not found in folder`, plus a "Confirm …" action in §10.
-3. **Don't overwrite.** If a `Project_Summary_*.md` already exists, stop for that project and report it. Updating an existing summary is the job of every other skill's "on every touch" step.
+3. **Don't overwrite.** If a `Project_Summary_*.md` already exists, don't rewrite it: skip the summary steps for that project and report it. Updating an existing summary is the job of every other skill's "on every touch" step. The two exceptions are AI_Context, which is rebuilt idempotently (unchanged sources are skipped), and the §16 AI_Context pointer block between its markers, which the scripts refresh.
 4. **One sandbox per project.** Match `00_ai_sandbox` case-insensitively (`00_AI_sandbox` counts). Never create a second one alongside.
 5. **No personal paths in the output.** Write paths relative to the project folder. Resolve the user's home at runtime (`%USERPROFILE%` / `$HOME`) — never hard-code a user name (`bdm-house-style` §9).
 6. **Internal work.** This is a CLAUDE.md §10 "internal and reversible" task — do it, then report. No approval queue, no sign-off block, no signature, no DRAFT marking.
+7. **Live registers never go into AI_Context.** CAR, correspondence register, fee registers, trackers, cash flows: always read from source. Drawings stay out too.
+8. **OCR text is machine-read.** Scanned PDFs are filled with Windows OCR and marked so in the header. Never treat an OCR'd figure, date, name or clause number as checked: read the source before relying on it. Handwriting is not read.
+9. **Don't touch security settings.** If Office refuses to open a file (file block, protected view), log it as "read the source" and move on. Never change Trust Center or file-block settings to get a conversion through.
 
 ---
 
@@ -117,20 +122,59 @@ Copy `references/project_summary_template.md` and fill it.
 
 Write the file into `00_ai_sandbox\`. Re-open it once and check: 17 headings present, no `[placeholder]` brackets left, the template's HOW TO FILL comment removed, every $ figure and date has a source.
 
-### Step 6 — Report back
+### Step 6 — Build AI_Context
+
+Runs for every project in scope, including ones whose summary already existed. Needs Node 18+ and three libraries in a per-user folder outside the synced library (see the top of `scripts\common.mjs`; one-off install). Windows is needed for the Word/Excel legacy conversion and for OCR; elsewhere those two steps are skipped and the files are logged.
+
+```powershell
+$s = "${CLAUDE_PLUGIN_ROOT}\skills\bdm-project-sandbox-setup\scripts"
+node "$s\build_ai_context.mjs" --project "<job folder>" --legacy-only   # old .doc/.xls via Word/Excel, once
+node "$s\build_ai_context.mjs" --project "<job folder>"                 # convert, exclude, index
+node "$s\ocr_stubs.mjs"        --project "<job folder>"                 # OCR scanned PDFs (Windows OCR)
+node "$s\build_ai_context.mjs" --project "<job folder>"                 # refresh indexes with the OCR results
+node "$s\summary_pointer.mjs"  --project "<job folder>"                 # §16 pointer in the summary
+```
+
+Repeat `--project` for several jobs, or pass `--projects-file <txt>` (one folder per line, e.g. the user's active list) or `--all` (every job folder with a sandbox). For more than a few hundred documents, run the legacy pre-pass first, then one build process per two or three projects in parallel; the scripts share a cache and never drive Office from two processes at once.
+
+What it does, so you can explain it:
+
+- **Converts:** PDF text (pdf.js), Word (document XML, tables kept as markdown tables), Excel (visible sheets, first 400 rows), PowerPoint text, plain text. One `.md` per source in `AI_Context\<top folder>\`, header first: source path, source modified time and size, method, quality, conversion date, rules version.
+- **Excludes, with the reason in `_build_log.csv`:** drawings (large-format pages, title-block text, or label-only text on a plan-named file, in any folder), image-only pages, live registers, superseded and archived copies (`ss`, `_SS`, `superseded`, `_ARCHIVE`, `old`), the sandbox itself, Office lock files, and the second of a same-name pair in one folder (the PDF is kept as the issued form unless it has no text).
+- **Indexes:** `INDEX.md` lists the contract, specification and approvals first ("read this first", tested on the file name and the contract-documents folder, never on `13_Contract Admin` as a whole), then one `_INDEX.md` per folder, the OCR'd files, the still-unreadable ones and a build summary.
+- **OCR:** tries all four rotations when the upright read is noise (sideways-scanned forms are common) and OCRs a short-path temporary copy when the path is over 260 characters.
+- **Idempotent:** a source whose modified time and size match its copy's header is skipped; copies whose source has gone are removed.
+
+Check before you report: open `INDEX.md`, read the "read this first" list for anything that is obviously not a contract, spec or approval, and look at `_build_log.csv` for errors. If a whole contract "Part" was excluded as a drawing, look at a page of it before accepting that (they are often the drawing set or photo annexures, but check).
+
+### Step 7 — Report back
 
 One table, one line per project:
 
-| Project | Sandbox | Summary | Sources read | Gaps | Top flag |
-|---|---|---|---|---|---|
+| Project | Sandbox | Summary | Sources read | Gaps | AI_Context (converted / OCR'd / unreadable / errors) | Top flag |
+|---|---|---|---|---|---|---|
 
-Then a short "What to do next": the two or three gaps the PM should close first (usually contract sum, client contact, consultant PI). Link each summary file. Keep it short.
+Then a short "What to do next": the two or three gaps the PM should close first (usually contract sum, client contact, consultant PI), and any AI_Context errors that matter (a contract document that could not be converted). Link each summary file and each `INDEX.md`. Keep it short.
 
 If the session has a run log or console the user's layer asks for, log the run there.
 
 ---
 
-## 4. Edge cases
+## 4. Keeping AI_Context current — the monthly audit
+
+CLAUDE.md §13 makes the first-of-month audit a standing trigger. The AI_Context part is one command:
+
+```powershell
+node "$s\audit_ai_context.mjs" --projects-file "<active list>" --refresh --report "<user folder>\AI_Context_Audit_<yyyy-mm>.md"
+```
+
+It reports, per project, copies that are **stale** (source modified time or size changed), copies whose **source was removed**, and documents **added since the last build**. With `--refresh` it brings each project that needs it current in the same pass (legacy pre-pass, build, OCR, index, §16 pointer) and reports the state after. Without `--refresh` it changes nothing.
+
+Run it on a schedule where the session supports scheduled tasks (first of the month, early morning), and on demand when a contract is amended or a document set is re-issued. Log the run where the user's layer asks for it. A project still showing "needs refresh" after a refresh is a flag for the user, not something to retry in a loop.
+
+---
+
+## 5. Edge cases
 
 - **Sandbox exists, no summary, other files inside** (e.g. an `Initial Report\` folder): create the summary alongside. If those files are deliverables with a regular home, flag in §16 — don't move them.
 - **Retired summary file present** (`PROJECT.md` etc.) **but no `Project_Summary_*.md`:** use it as a source, write the standard file, flag the retired one for the PM to remove. Don't delete it.
@@ -138,11 +182,15 @@ If the session has a run log or console the user's layer asks for, log the run t
 - **Nera-style multi-contract projects:** one summary; split §5–§7 by contract with a sub-heading each.
 - **Conflicting figures** between two documents: record both with sources, put the conflict in §9 and a "Confirm …" in §10. Don't pick one.
 - **A project the user says is dormant or archived:** skip it unless they insist.
+- **Office refuses an old `.xls` or `.doc`** ("Office has detected a problem with this file"): file-block policy. Logged as "read the source"; the PDF in the same folder usually converts. Don't change security settings (rule 9).
+- **Scans with handwriting** (statutory declarations, signed forms): OCR reads the printed form, not the handwritten names and dates. The header says so; read the source for those.
+- **Large AI_Context:** a big job can produce tens of MB of markdown, which syncs to everyone who syncs the library. That is expected; the libraries and caches stay outside the synced library by design.
 
 ---
 
-## 5. Revision control
+## 6. Revision control
 
 | Rev | Date | Editor | Change |
 |---|---|---|---|
 | R1 | 2026-10-06 | James Gill | Initial issue. Sweep + per-project backfill to the CLAUDE.md §13 standard (17 sections, incl. §17 conventions). Bundled read-only `scan_project.ps1` and `read_msg.ps1`. |
+| R2 | 2026-10-07 | James Gill | AI_Context build (CLAUDE.md R5 §8): new Step 6 and scripts `common.mjs`, `build_ai_context.mjs`, `convert_legacy.ps1`, `ocr_batch.ps1`, `ocr_stubs.mjs`, `summary_pointer.mjs`; monthly audit `audit_ai_context.mjs` (new §4); rules 7 to 9 (no live registers, OCR is machine-read, no security-setting changes); §16 pointer line in the summary template. Proven on ten live projects: 5,923 documents converted, 309 scans OCR'd. |

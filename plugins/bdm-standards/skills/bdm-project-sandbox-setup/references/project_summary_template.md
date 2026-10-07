@@ -137,6 +137,7 @@ Tracked in OneNote / ProjectHub — not in this summary. No gap flag for histori
 - Project folder: `[relative path]`
 - Live CAR: `[path or "none — pre-contract"]`
 - Sources read for this backfill: [list of relative paths, emails by filename]
+- AI_Context: written by the skill's `summary_pointer.mjs` between the `AI_Context:start` / `AI_Context:end` markers (folder, last re-index date, counts, stale rule). Leave the markers in place; the monthly audit refreshes the block.
 
 ### Folder gap flags
 

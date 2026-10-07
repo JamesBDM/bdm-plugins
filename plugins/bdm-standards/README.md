@@ -1,12 +1,22 @@
-# BDM Standards — v2.2.0
+# BDM Standards — v2.4.0
 
 The foundation plugin. Install this first — the other BDM plugins assume it.
 
 - **`bdm-house-style` (R3)** — the always-on rulebook. Palette, typography, page geometry, logo, layout ("Charcoal · Navy Rule"), table specification, numerical conventions, template resolution, QA checklist and the BDM working rules. A rulebook, not a template: it produces answers and corrections, not files.
 - **`bdm-pdf-export` (R2)** — **self-contained.** Produces a PDF from a BDM-templated `.docx` that matches Microsoft Word. Carries the four preflight fixes inline: Aptos→Calibri repack, `tblGrid` normalisation, cloned-row border reset, and content-control placeholder stripping. Plus the signature-ready definition.
-- **`datum-markup`** — writes editable markups, measurements and priced BOQ takeoffs directly into a PDF for Datum.
+- **`bdm-project-sandbox-setup` (R2)** — creates `00_ai_sandbox`, backfills the 17-section project summary, and builds `AI_Context\` (the project documents except drawings as markdown, scans OCR'd), with a monthly stale-file audit.
+- **`datum-markup`** — writes editable markups, measurements and priced BOQ takeoffs directly into a PDF for Datum, then bakes them with Datum's own Save so they show in Adobe, Chrome and Bluebeam too.
 
 Templates live in SharePoint, not here. See `bdm-house-style` § 8.
+
+## What changed in 2.4.0
+
+- **`bdm-project-sandbox-setup` R2: AI_Context.** Implements CLAUDE.md R5 §8. Converts a project's static documents (except drawings) to markdown in `00_ai_sandbox\AI_Context\`, one file per source with a source/modified/size header so stale copies are detectable; excludes drawings, live registers, superseded copies and duplicates; OCRs scanned PDFs with the built-in Windows OCR (rotation-aware); writes `INDEX.md` with the contract, spec and approvals first; adds the §16 pointer to the summary. New `audit_ai_context.mjs` is the AI_Context part of the monthly audit (stale, removed, new; `--refresh` brings projects current). Needs Node 18+ and a one-off per-user install of pdfjs-dist, exceljs and jszip outside the synced library (see `scripts/common.mjs`).
+
+## What changed in 2.3.0
+
+- **`datum-markup` now bakes its output.** Previously its PDFs showed markups only in Datum — Adobe, Chrome and Bluebeam showed a clean drawing until someone opened the file in Datum and pressed Save. New `bake()` (in `datum_markup.py`, driving `scripts/datum-bake.js`) opens the file in the real Datum app in headless Chromium and runs Datum's own Save, then checks the result before replacing the file. Needs Node 18+ and `npm install playwright` (plus `npx playwright install chromium` if no Chrome/Edge). If baking isn't possible the file is left as written and the skill says so on delivery.
+- **`datum-markup` brought up to Datum v3.44.** The plugin copy had fallen behind the working copy: full symbol catalogue (`references/symbols.md`, `symbol_at`, `symbol_true_size` for plant at true size), current annotation reference, and the updated workflow.
 
 ## What changed in 2.2.0
 
